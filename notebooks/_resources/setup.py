@@ -22,8 +22,18 @@ from databricks.sdk.service.serving import ChatMessage, ChatMessageRole
 
 # COMMAND ----------
 
-USER = WorkspaceClient().current_user.me().user_name
-EXPERIMENT_PATH = f"/Workspace/Users/{USER}/mlflow_evals_workshop/agent_traces"
+w = WorkspaceClient()
+USER = w.current_user.me().user_name
+EXPERIMENT_PARENT = f"/Workspace/Users/{USER}/mlflow_evals_workshop"
+EXPERIMENT_PATH = f"{EXPERIMENT_PARENT}/agent_traces"
+
+# mlflow.set_experiment does not recursively create parent workspace folders.
+# Pre-create the parent so first-run users do not hit RESOURCE_DOES_NOT_EXIST.
+try:
+    w.workspace.mkdirs(EXPERIMENT_PARENT)
+except Exception:
+    pass
+
 mlflow.set_experiment(EXPERIMENT_PATH)
 
 # Foundation Model endpoint used by the agent and the LLM judge.
