@@ -1,89 +1,120 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 860" width="1080" height="860" role="img" aria-label="MLflow GenAI evaluation workshop architecture">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 1100" width="1320" height="1100" role="img" aria-label="MLflow GenAI evaluation workshop architecture">
   <defs>
     <style>
       .title { font: 700 30px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #7d8590; }
+      .section-label { font: 600 14px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #7d8590; }
+      .arrow-label { font: 500 12px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #7d8590; }
       .box-title { font: 600 16px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #ffffff; }
-      .box-sub { font: 400 13px/1.3 "SF Mono", Menlo, monospace; fill: #ffffff; opacity: 0.85; }
-      .box-detail { font: 400 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #ffffff; opacity: 0.7; }
+      .box-sub { font: 600 12px/1.3 "SF Mono", Menlo, monospace; fill: #ffffff; opacity: 0.85; }
+      .box-detail { font: 400 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #ffffff; opacity: 0.78; }
+      .loop-label { font: 600 13px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; fill: #fbbf24; }
     </style>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
       <path d="M0,0 L9,3 L0,6 z" fill="#9aa0a6"/>
     </marker>
+    <marker id="arrow-loop" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#fbbf24"/>
+    </marker>
   </defs>
 
-  <text x="540" y="50" class="title" text-anchor="middle">MLflow GenAI evaluation workshop</text>
+  <text x="660" y="50" class="title" text-anchor="middle">MLflow GenAI evaluation workshop</text>
 
-  <!-- Row 1: Agent → Trace -->
+  <!-- Agent -->
   <g>
-    <rect x="140" y="120" width="240" height="100" rx="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
-    <text x="260" y="160" class="box-title" text-anchor="middle">Your RAG agent</text>
-    <text x="260" y="184" class="box-sub" text-anchor="middle">retrieve + generate</text>
+    <rect x="540" y="100" width="240" height="80" rx="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
+    <text x="660" y="138" class="box-title" text-anchor="middle">Your RAG agent</text>
+    <text x="660" y="160" class="box-sub" text-anchor="middle">retrieve + generate</text>
+  </g>
+
+  <!-- Trace -->
+  <g>
+    <rect x="460" y="220" width="400" height="110" rx="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
+    <text x="660" y="255" class="box-title" text-anchor="middle">MLflow trace</text>
+    <text x="660" y="278" class="box-sub" text-anchor="middle">chain to retrieve to LLM</text>
+    <text x="660" y="301" class="box-detail" text-anchor="middle">user, session, tags metadata</text>
+  </g>
+
+  <!-- UC Delta hub -->
+  <g>
+    <rect x="500" y="430" width="320" height="270" rx="10" fill="#581c87" stroke="#c084fc" stroke-width="2"/>
+    <text x="660" y="490" class="box-title" text-anchor="middle">Traces in Unity Catalog</text>
+    <text x="660" y="513" class="box-sub" text-anchor="middle">Delta table (Public Preview)</text>
+    <text x="660" y="548" class="box-detail" text-anchor="middle">Trace + spans + assessments</text>
+    <text x="660" y="568" class="box-detail" text-anchor="middle">SQL queryable, ACL governed</text>
+    <text x="660" y="600" class="box-detail" text-anchor="middle" font-style="italic">Each trace can carry many</text>
+    <text x="660" y="618" class="box-detail" text-anchor="middle" font-style="italic">assessments from any source</text>
+  </g>
+
+  <!-- Source 1: In-app feedback -->
+  <g>
+    <rect x="40" y="395" width="380" height="120" rx="10" fill="#14532d" stroke="#4ade80" stroke-width="2"/>
+    <text x="230" y="425" class="box-title" text-anchor="middle">In-app feedback</text>
+    <text x="230" y="446" class="box-sub" text-anchor="middle">mlflow.log_feedback (HUMAN)</text>
+    <text x="230" y="473" class="box-detail" text-anchor="middle">thumbs, star ratings, freeform comments,</text>
+    <text x="230" y="491" class="box-detail" text-anchor="middle">failure tags (hallucination, missing context),</text>
+    <text x="230" y="509" class="box-detail" text-anchor="middle">attached by end-users in your app UI</text>
+  </g>
+
+  <!-- Source 2: Review App labeling -->
+  <g>
+    <rect x="40" y="535" width="380" height="120" rx="10" fill="#14532d" stroke="#4ade80" stroke-width="2"/>
+    <text x="230" y="565" class="box-title" text-anchor="middle">Review App labeling</text>
+    <text x="230" y="586" class="box-sub" text-anchor="middle">labeling_session (HUMAN, SME)</text>
+    <text x="230" y="613" class="box-detail" text-anchor="middle">structured schemas: boolean, numeric,</text>
+    <text x="230" y="631" class="box-detail" text-anchor="middle">categorical, freeform per field</text>
+    <text x="230" y="649" class="box-detail" text-anchor="middle">e.g. factual, policy, relevance, failure mode</text>
+  </g>
+
+  <!-- Source 3: Automated scorers -->
+  <g>
+    <rect x="40" y="675" width="380" height="120" rx="10" fill="#7c2d12" stroke="#fb923c" stroke-width="2"/>
+    <text x="230" y="705" class="box-title" text-anchor="middle">Automated scorers</text>
+    <text x="230" y="726" class="box-sub" text-anchor="middle">@scorer + make_judge (CODE / LLM)</text>
+    <text x="230" y="753" class="box-detail" text-anchor="middle">deterministic code checks + LLM judges</text>
+    <text x="230" y="771" class="box-detail" text-anchor="middle">offline batch via mlflow.genai.evaluate</text>
+    <text x="230" y="789" class="box-detail" text-anchor="middle">or scheduled in prod with 5-100% sampling</text>
+  </g>
+
+  <!-- Consumers row -->
+  <g>
+    <rect x="80" y="850" width="220" height="80" rx="10" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
+    <text x="190" y="884" class="box-title" text-anchor="middle">SQL warehouse</text>
+    <text x="190" y="908" class="box-detail" text-anchor="middle">ad-hoc queries on traces</text>
   </g>
 
   <g>
-    <rect x="500" y="120" width="380" height="100" rx="10" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2"/>
-    <text x="690" y="155" class="box-title" text-anchor="middle">MLflow trace</text>
-    <text x="690" y="179" class="box-sub" text-anchor="middle">chain to retrieve to LLM</text>
-    <text x="690" y="200" class="box-detail" text-anchor="middle">+ user, session, tags metadata</text>
-  </g>
-
-  <path d="M 380 170 L 492 170" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-
-  <!-- Row 2: three signal sources that attach to traces -->
-  <g>
-    <rect x="80" y="320" width="280" height="140" rx="10" fill="#14532d" stroke="#4ade80" stroke-width="2"/>
-    <text x="220" y="355" class="box-title" text-anchor="middle">In-app feedback</text>
-    <text x="220" y="380" class="box-sub" text-anchor="middle">mlflow.log_feedback</text>
-    <text x="220" y="410" class="box-detail" text-anchor="middle">End-user thumbs up/down,</text>
-    <text x="220" y="428" class="box-detail" text-anchor="middle">freeform ratings, source = HUMAN</text>
+    <rect x="350" y="850" width="220" height="80" rx="10" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
+    <text x="460" y="884" class="box-title" text-anchor="middle">Genie + AI/BI</text>
+    <text x="460" y="908" class="box-detail" text-anchor="middle">dashboards, NL questions</text>
   </g>
 
   <g>
-    <rect x="400" y="320" width="280" height="140" rx="10" fill="#14532d" stroke="#4ade80" stroke-width="2"/>
-    <text x="540" y="355" class="box-title" text-anchor="middle">Review App</text>
-    <text x="540" y="380" class="box-sub" text-anchor="middle">labeling sessions</text>
-    <text x="540" y="410" class="box-detail" text-anchor="middle">SME batch annotation against</text>
-    <text x="540" y="428" class="box-detail" text-anchor="middle">a typed label schema</text>
+    <rect x="620" y="850" width="600" height="80" rx="10" fill="#854d0e" stroke="#fbbf24" stroke-width="2"/>
+    <text x="920" y="880" class="box-title" text-anchor="middle">Improvement loop (this is the point)</text>
+    <text x="920" y="902" class="box-detail" text-anchor="middle">eval-set curation, regression evals, judge calibration,</text>
+    <text x="920" y="920" class="box-detail" text-anchor="middle">failure-mode clustering, few-shot mining, fine-tuning sets</text>
   </g>
 
-  <g>
-    <rect x="720" y="320" width="280" height="140" rx="10" fill="#7c2d12" stroke="#fb923c" stroke-width="2"/>
-    <text x="860" y="355" class="box-title" text-anchor="middle">Automated scorers</text>
-    <text x="860" y="380" class="box-sub" text-anchor="middle">@scorer + make_judge</text>
-    <text x="860" y="410" class="box-detail" text-anchor="middle">Code or LLM, offline batch or</text>
-    <text x="860" y="428" class="box-detail" text-anchor="middle">scheduled (Beta), 5-100% sampling</text>
-  </g>
+  <!-- Arrows -->
+  <!-- Agent emits trace -->
+  <path d="M 660 182 L 660 212" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="672" y="202" class="arrow-label">emits</text>
 
-  <!-- Trace fans out to all three signal sources -->
-  <path d="M 600 220 L 220 312" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 690 220 L 540 312" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 780 220 L 860 312" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Trace persists to UC -->
+  <path d="M 660 332 L 660 422" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="672" y="382" class="arrow-label">persists</text>
 
-  <!-- Row 3: All three converge into UC -->
-  <g>
-    <rect x="360" y="540" width="360" height="110" rx="10" fill="#581c87" stroke="#c084fc" stroke-width="2"/>
-    <text x="540" y="578" class="box-title" text-anchor="middle">Traces in Unity Catalog</text>
-    <text x="540" y="603" class="box-sub" text-anchor="middle">Delta table (Public Preview)</text>
-    <text x="540" y="628" class="box-detail" text-anchor="middle">Trace + spans + assessments,</text>
-    <text x="540" y="646" class="box-detail" text-anchor="middle">SQL queryable, ACL governed</text>
-  </g>
+  <!-- 3 sources write into UC -->
+  <path d="M 422 455 L 492 500" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 422 595 L 492 565" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 422 735 L 492 635" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Three signal sources converge into UC -->
-  <path d="M 220 462 L 460 532" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 540 462 L 540 532" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 860 462 L 620 532" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- UC fans out to 3 consumers -->
+  <path d="M 590 702 L 230 842" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 660 702 L 460 842" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 730 702 L 920 842" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
 
-  <!-- Row 4: UC fans out to consumers -->
-  <g>
-    <rect x="220" y="740" width="240" height="70" rx="10" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
-    <text x="340" y="781" class="box-title" text-anchor="middle">SQL warehouse</text>
-  </g>
-
-  <g>
-    <rect x="620" y="740" width="240" height="70" rx="10" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
-    <text x="740" y="781" class="box-title" text-anchor="middle">Genie + AI/BI dashboards</text>
-  </g>
-
-  <path d="M 460 652 L 360 732" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-  <path d="M 620 652 L 720 732" stroke="#9aa0a6" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <!-- Improvement loop arrow back to Agent (curved up the right side) -->
+  <path d="M 1220 870 C 1290 870, 1290 140, 780 140" stroke="#fbbf24" stroke-width="2.5" fill="none" stroke-dasharray="6,4" marker-end="url(#arrow-loop)"/>
+  <text x="1278" y="500" class="loop-label" transform="rotate(-90 1278 500)" text-anchor="middle">updates prompts, retrieval, tools, judges, few-shot examples</text>
 </svg>
