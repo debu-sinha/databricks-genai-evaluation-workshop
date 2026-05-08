@@ -8,6 +8,28 @@ Six runnable lessons. About 60 minutes end to end.
 
 ![Architecture](images/architecture.svg)
 
+## How the data flow works
+
+Every annotation in this workshop ends up as an **assessment** attached to an MLflow trace. Three sources produce assessments and all three write to the same Unity Catalog Delta table:
+
+**1. In-app feedback** (HUMAN, end-users in your app). `mlflow.log_feedback(trace_id, name, value, source=AssessmentSource.HUMAN)` accepts boolean values (thumbs up/down, "was this helpful?"), numeric ratings (1-5 stars, confidence sliders), categorical tags (failure modes like `hallucination`, `missing_context`, `wrong_tool`), and freeform text (what went wrong, what the right answer should have been). Multiple assessments can hang off one trace.
+
+**2. Review App labeling** (HUMAN, SMEs). You define a typed label schema in code (`create_label_schema`) with fields like `factual` (boolean), `answer_relevance` (numeric, 1-5), `failure_mode` (categorical), `rationale` (text). You create a labeling session with a queue of traces. SMEs go through the queue in the Review App UI and fill out every field for every trace. Each filled field becomes a separate assessment. This is your **ground truth**.
+
+**3. Automated scorers** (CODE or LLM). Code scorers do deterministic checks (PII detection, length limits, schema validation, exact string match). LLM judges built with `make_judge` evaluate things humans usually do (groundedness, relevance, safety, custom rubrics). Both run in two modes: offline batch via `mlflow.genai.evaluate(data=..., scorers=[...])`, or scheduled in production via `scorer.register().start(sampling_config=ScorerSamplingConfig(sample_rate=0.1))`.
+
+## How the agent gets better from this data
+
+The point of capturing all this is the loop back to your agent. Five concrete uses, all reading from the same UC table:
+
+- **Eval-set curation** — labeled traces become regression eval sets. Run `mlflow.genai.evaluate(data=labeled_traces, scorers=[...])` whenever you change a prompt, swap a retrieval index, or add a tool. Catch regressions before deploy.
+- **LLM judge calibration** — compare LLM judge scores against SME labels on the same traces. If a judge agrees with humans <80%, refine its prompt until it does. Now you can trust the judge to scale to thousands of traces a day where SMEs cannot.
+- **Failure-mode clustering** — group traces by failure tag and inspect what they have in common. "60% of `hallucination` traces are queries about pricing" tells you to fix retrieval for that topic. SQL plus Genie are how you find these clusters.
+- **Few-shot mining** — high-confidence SME-labeled traces become in-context examples in the agent's prompt. Pull them straight out of UC by filtering on assessment values.
+- **Fine-tuning sets** — once you have enough labeled traces, fine-tune retrieval embeddings or generation models on the labeled outputs.
+
+This is the closed loop: agent emits traces, signals annotate them, the data drives concrete changes back to agent code. Without the loop, the assessments are dead weight.
+
 ## What you'll build
 
 - A small RAG agent emitting structured MLflow traces with session and user metadata
