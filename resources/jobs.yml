@@ -17,7 +17,7 @@ resources:
         - task_key: pre_flight
           environment_key: serverless
           notebook_task:
-            notebook_path: ../notebooks/00_pre_flight_check.py
+            notebook_path: ../notebooks/01_pre_flight_check.py
             base_parameters:
               experiment_path: ${var.experiment_path}
 
@@ -26,7 +26,7 @@ resources:
           depends_on:
             - task_key: pre_flight
           notebook_task:
-            notebook_path: ../notebooks/01_agent_app.py
+            notebook_path: ../notebooks/02_agent_app.py
             base_parameters:
               experiment_path: ${var.experiment_path}
 
@@ -35,7 +35,7 @@ resources:
           depends_on:
             - task_key: agent_app
           notebook_task:
-            notebook_path: ../notebooks/02_capture_assessments.py
+            notebook_path: ../notebooks/03_capture_assessments.py
             base_parameters:
               experiment_path: ${var.experiment_path}
 
@@ -44,16 +44,25 @@ resources:
           depends_on:
             - task_key: capture_assessments
           notebook_task:
-            notebook_path: ../notebooks/03_offline_evals.py
+            notebook_path: ../notebooks/04_offline_evals.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: judge_alignment
+          environment_key: serverless
+          depends_on:
+            - task_key: offline_evals
+          notebook_task:
+            notebook_path: ../notebooks/05_judge_alignment.py
             base_parameters:
               experiment_path: ${var.experiment_path}
 
         - task_key: production_monitoring
           environment_key: serverless
           depends_on:
-            - task_key: offline_evals
+            - task_key: judge_alignment
           notebook_task:
-            notebook_path: ../notebooks/04_production_monitoring.py
+            notebook_path: ../notebooks/06_production_monitoring.py
             base_parameters:
               experiment_path: ${var.experiment_path}
 
@@ -62,7 +71,7 @@ resources:
           depends_on:
             - task_key: production_monitoring
           notebook_task:
-            notebook_path: ../notebooks/05_otel_uc_integration.py
+            notebook_path: ../notebooks/07_otel_uc_integration.py
             base_parameters:
               experiment_path: ${var.experiment_path}
               trace_catalog: ${var.trace_catalog}

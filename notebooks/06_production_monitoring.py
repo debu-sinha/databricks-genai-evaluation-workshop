@@ -1,9 +1,10 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Lesson 5 - Schedule scorers in production
+# MAGIC # Lesson 6 - Schedule scorers in production
 # MAGIC
 # MAGIC Run the same scorers from lesson 4 against existing traces synchronously, then register them
-# MAGIC for continuous scoring of new traces.
+# MAGIC for continuous scoring of new traces. The `relevance` scorer registered here picks up the
+# MAGIC aligned version from lesson 5 if you ran that lesson.
 
 # COMMAND ----------
 
@@ -152,4 +153,4 @@ _register_or_skip(relevance_judge, "relevance", 0.10)
 # MAGIC 3. Scheduled scorer execution has 15-20 minute initial processing latency. The first results
 # MAGIC    show up after that window; you don't need to watch for them now.
 # MAGIC
-# MAGIC Continue to [`06_otel_uc_integration`]($./06_otel_uc_integration).
+# MAGIC Continue to [`07_otel_uc_integration`]($./07_otel_uc_integration).

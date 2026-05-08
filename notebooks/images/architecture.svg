@@ -90,9 +90,9 @@
 
   <g>
     <rect x="620" y="850" width="600" height="80" rx="10" fill="#854d0e" stroke="#fbbf24" stroke-width="2"/>
-    <text x="920" y="880" class="box-title" text-anchor="middle">Improvement loop (this is the point)</text>
-    <text x="920" y="902" class="box-detail" text-anchor="middle">eval-set curation, regression evals, judge calibration,</text>
-    <text x="920" y="920" class="box-detail" text-anchor="middle">failure-mode clustering, few-shot mining, fine-tuning sets</text>
+    <text x="920" y="876" class="box-title" text-anchor="middle">Improvement loop (lesson 5: judge.align)</text>
+    <text x="920" y="898" class="box-detail" text-anchor="middle">eval-set curation, judge alignment with SME labels (SIMBA, GEPA, MemAlign),</text>
+    <text x="920" y="916" class="box-detail" text-anchor="middle">failure-mode clustering, few-shot mining, fine-tuning sets</text>
   </g>
 
   <!-- Arrows -->

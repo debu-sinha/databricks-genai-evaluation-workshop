@@ -195,4 +195,4 @@ results = mlflow.genai.evaluate(
 # MAGIC 4. Click into individual traces. The `relevance` value should be `yes`, `partial`, or `no` -
 # MAGIC    not `None`. If you see `None`, the judge prompt isn't constraining output enough.
 # MAGIC
-# MAGIC Continue to [`05_production_monitoring`]($./05_production_monitoring).
+# MAGIC Continue to [`05_judge_alignment`]($./05_judge_alignment) to calibrate this judge against the SME labels from lesson 3.
