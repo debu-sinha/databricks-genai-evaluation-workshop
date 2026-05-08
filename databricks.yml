@@ -1,0 +1,41 @@
+# Databricks Asset Bundle for the MLflow GenAI evaluation workshop.
+#
+# Deploy:
+#   databricks bundle deploy -t dev -p <your-profile>
+#
+# Run the full pipeline (notebooks 00 -> 05):
+#   databricks bundle run mlflow_evals_workshop_pipeline -t dev -p <your-profile>
+
+bundle:
+  name: mlflow_evals_workshop
+
+include:
+  - resources/*.yml
+
+variables:
+  experiment_path:
+    description: "MLflow experiment path. Override per environment if needed."
+    default: "/Workspace/Users/${workspace.current_user.userName}/mlflow_evals_workshop/agent_traces"
+  trace_catalog:
+    description: "UC catalog where traces are stored when OTel + Traces in UC is enabled."
+    default: "main"
+  trace_schema:
+    description: "UC schema where traces are stored."
+    default: "mlflow_evals_workshop"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com
+    variables:
+      experiment_path: "/Workspace/Users/${workspace.current_user.userName}/mlflow_evals_workshop_dev/agent_traces"
+
+  prod:
+    mode: production
+    workspace:
+      host: https://<your-workspace>.cloud.databricks.com
+    variables:
+      trace_catalog: "<your-catalog>"
+      trace_schema: "<your-schema>"

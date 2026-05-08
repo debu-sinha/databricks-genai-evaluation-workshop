@@ -1,0 +1,69 @@
+resources:
+  jobs:
+    mlflow_evals_workshop_pipeline:
+      name: "MLflow GenAI evaluation workshop - end to end"
+
+      # Serverless compute for the entire job
+      environments:
+        - environment_key: serverless
+          spec:
+            client: "1"
+            dependencies:
+              - mlflow
+              - databricks-sdk
+              - databricks-agents
+
+      tasks:
+        - task_key: pre_flight
+          environment_key: serverless
+          notebook_task:
+            notebook_path: ../notebooks/00_pre_flight_check.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: agent_app
+          environment_key: serverless
+          depends_on:
+            - task_key: pre_flight
+          notebook_task:
+            notebook_path: ../notebooks/01_agent_app.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: capture_assessments
+          environment_key: serverless
+          depends_on:
+            - task_key: agent_app
+          notebook_task:
+            notebook_path: ../notebooks/02_capture_assessments.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: offline_evals
+          environment_key: serverless
+          depends_on:
+            - task_key: capture_assessments
+          notebook_task:
+            notebook_path: ../notebooks/03_offline_evals.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: production_monitoring
+          environment_key: serverless
+          depends_on:
+            - task_key: offline_evals
+          notebook_task:
+            notebook_path: ../notebooks/04_production_monitoring.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+
+        - task_key: otel_uc_integration
+          environment_key: serverless
+          depends_on:
+            - task_key: production_monitoring
+          notebook_task:
+            notebook_path: ../notebooks/05_otel_uc_integration.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}
+              trace_catalog: ${var.trace_catalog}
+              trace_schema: ${var.trace_schema}

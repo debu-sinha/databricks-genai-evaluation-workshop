@@ -1,0 +1,104 @@
+# Databricks notebook source
+# MAGIC %md
+# MAGIC # Lesson 2 - Build a traced RAG agent
+# MAGIC
+# MAGIC A small retrieval-augmented agent that emits hierarchical MLflow traces. The point is the
+# MAGIC platform around the agent, not the agent itself.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Challenges Addressed
+# MAGIC
+# MAGIC 1. How do you wrap an existing agent so MLflow captures structured traces?
+# MAGIC 2. How do you tag traces with session and user so the UI filter chips work?
+# MAGIC 3. How do you generate enough realistic trace volume for the rest of the lessons to operate on?
+# MAGIC
+# MAGIC ## What is happening?
+# MAGIC
+# MAGIC The agent has three steps - top-level chain, retriever, generator - each decorated with
+# MAGIC `@mlflow.trace`. MLflow auto-builds the span tree from the call graph. Inside the chain,
+# MAGIC `mlflow.update_current_trace(metadata=...)` writes canonical session and user fields that the
+# MAGIC MLflow UI uses to drive its filter chips.
+# MAGIC
+# MAGIC We then call the agent on a query bank to populate the experiment with ~24 traces under three
+# MAGIC simulated users. Lessons 3-6 read from this trace surface.
+# MAGIC
+# MAGIC Reference: [MLflow tracing](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/) and
+# MAGIC [user/session metadata](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/track-users-sessions).
+
+# COMMAND ----------
+
+# MAGIC %pip install -U -qqqq mlflow databricks-sdk databricks-agents
+# MAGIC dbutils.library.restartPython()
+
+# COMMAND ----------
+
+# MAGIC %run ./_resources/setup
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Run a single query
+# MAGIC
+# MAGIC One invocation produces one trace. Open the experiment Traces tab afterward and click into the
+# MAGIC trace to see the span tree (chain -> retrieve -> generate) and the metadata block on the right.
+
+# COMMAND ----------
+
+result = answer_question(
+    query="How are MLflow traces structured?",
+    session_id="demo-session-001",
+    user_id="alice@example.com",
+)
+print(result["answer"])
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Populate the experiment
+# MAGIC
+# MAGIC The remaining lessons read from a populated experiment. We run the agent across three simulated
+# MAGIC users on shuffled queries from the demo bank. Sleep 0.3s between calls to be polite to the
+# MAGIC Foundation Model endpoint.
+
+# COMMAND ----------
+
+import random
+import time
+
+USERS = [
+    ("alice@example.com", "session-alice-001"),
+    ("alice@example.com", "session-alice-002"),
+    ("bob@example.com", "session-bob-001"),
+    ("batch@example.com", "session-batch-001"),
+]
+
+random.seed(2026)
+shuffled = DEMO_QUERIES.copy()
+random.shuffle(shuffled)
+
+ok = 0
+for query in shuffled:
+    user_id, session_id = random.choice(USERS)
+    try:
+        answer_question(query=query, session_id=session_id, user_id=user_id)
+        ok += 1
+    except Exception as e:
+        print(f"  iter failed: {type(e).__name__}: {str(e)[:200]}")
+    time.sleep(0.3)
+
+print(f"populated {ok}/{len(shuffled)} traces")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## What to verify
+# MAGIC
+# MAGIC 1. Open the **Experiments** left nav, find `agent_traces`
+# MAGIC 2. Click the **Traces** tab. You should see ~24 traces named `answer_question`
+# MAGIC 3. Click any trace. The span tree shows `answer_question` (CHAIN) -> `retrieve` (RETRIEVER) -> `generate` (LLM)
+# MAGIC 4. In the Metadata panel, find `mlflow.trace.user` and `mlflow.trace.session`
+# MAGIC 5. Use the **Filter** chip above the trace list to filter by user (`alice@example.com`). The list narrows.
+# MAGIC
+# MAGIC Continue to [`03_capture_assessments`]($./03_capture_assessments).
