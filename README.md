@@ -106,8 +106,8 @@ from `mlflow.genai.judges.make_judge`. Results show side-by-side trace compariso
 Pairs every trace that has both a `HUMAN` and `LLM_JUDGE` assessment under the same name, runs
 one of three optimizers - **SIMBA** (the no-arg default per the [docs](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/align-judges),
 DSPy-based), **GEPA** (LLM-driven reflection, stronger when SME rationales are rich), or
-**MemAlign** (memory-augmented, experimental; MLflow team indicated 2026-05-13 it's a planned
-future default) - over the prompt, and produces a new judge object you register for production
+**MemAlign** (memory-augmented, experimental, and the MLflow team indicated on 2026-05-13 it's
+a planned future default) - over the prompt, and produces a new judge object you register for production
 use. Closes the loop: SMEs in lesson 3 produce ground truth, lesson 4 runs the unaligned judge,
 this lesson aligns the two and reports the agreement lift.
 

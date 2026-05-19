@@ -236,9 +236,9 @@ if len(paired) >= 10:
 # MAGIC Aggregation, DSPy-based). See the [SIMBA docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/simba/).
 # MAGIC For stronger but slower alignment when SME rationales are rich, swap in
 # MAGIC `optimizer=GEPAAlignmentOptimizer(...)` from `mlflow.genai.judges.optimizers`. **MemAlign**
-# MAGIC (`MemAlignOptimizer(reflection_lm=...)`) is also available but is currently experimental;
-# MAGIC the MLflow team indicated on 2026-05-13 that it's a likely future default but the
-# MAGIC no-arg `align()` call still routes to SIMBA today.
+# MAGIC (`MemAlignOptimizer(reflection_lm=...)`) is also available but is currently experimental.
+# MAGIC The MLflow team indicated on 2026-05-13 that it's a likely future default. The no-arg
+# MAGIC `align()` call still routes to SIMBA today.
 
 # COMMAND ----------
 
