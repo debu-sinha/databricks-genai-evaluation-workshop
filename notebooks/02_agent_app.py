@@ -55,6 +55,31 @@ print(result["answer"])
 # MAGIC The remaining lessons read from a populated experiment. We run the agent across three simulated
 # MAGIC users on shuffled queries from the demo bank. Sleep 0.3s between calls to be polite to the
 # MAGIC Foundation Model endpoint.
+# MAGIC
+# MAGIC **Re-run note.** If you have already populated this experiment in a previous notebook
+# MAGIC session, the cell below may report "skipped N duplicate trace IDs". That is safe but
+# MAGIC produces fewer fresh traces, which can starve lesson 5 (needs >= 10 paired traces). The
+# MAGIC diagnostic cell directly below this one prints the current trace count. If it is already
+# MAGIC well above 20 you can skip the populate cell. If you want a clean slate, wipe traces from
+# MAGIC the experiment first (Experiments -> Traces tab -> select all -> Delete) and then run.
+
+# COMMAND ----------
+
+from mlflow.client import MlflowClient
+
+_client = MlflowClient()
+_exp = mlflow.get_experiment_by_name(EXPERIMENT_PATH)
+_existing = _client.search_traces(
+    experiment_ids=[_exp.experiment_id],
+    max_results=100,
+)
+print(f"Existing traces in experiment: {len(_existing)}")
+if len(_existing) >= 20:
+    print(
+        "  >= 20 already. You can skip the populate cell below and continue to lesson 3."
+    )
+else:
+    print("  < 20. Run the populate cell below to add ~23 more.")
 
 # COMMAND ----------
 
