@@ -76,3 +76,12 @@ resources:
               experiment_path: ${var.experiment_path}
               trace_catalog: ${var.trace_catalog}
               trace_schema: ${var.trace_schema}
+
+        - task_key: deploy_agent
+          environment_key: serverless
+          depends_on:
+            - task_key: otel_uc_integration
+          notebook_task:
+            notebook_path: ../notebooks/08_deploy_agent.py
+            base_parameters:
+              experiment_path: ${var.experiment_path}

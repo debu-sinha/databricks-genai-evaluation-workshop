@@ -4,7 +4,7 @@ A hands-on workshop covering the full MLflow GenAI evaluation surface on Databri
 custom scorers, LLM-as-a-judge, human review labeling, scheduled production monitoring, and
 OpenTelemetry traces in Unity Catalog.
 
-Seven runnable lessons. About 75 minutes end to end.
+Eight runnable lessons. About 90 minutes end to end (lesson 8 deploys a serving endpoint which adds endpoint-provisioning wait time).
 
 ![Architecture](images/architecture.svg)
 
@@ -37,6 +37,7 @@ This is the closed loop: agent emits traces, signals annotate them, the data dri
 - An offline evaluation run with a custom code-based scorer and an LLM-as-a-judge
 - Two scheduled scorers monitoring production traces with sampling
 - A clear picture of how OpenTelemetry traces flow into Unity Catalog Delta tables and how to query them with SQL
+- A serving endpoint hosting the agent with the canonical three-env-var trace-routing pattern, so AI Playground calls land in the same MLflow experiment as your offline evals
 
 ## Prerequisites
 
@@ -66,7 +67,7 @@ databricks bundle deploy -t dev -p <your-profile>
 databricks bundle run mlflow_evals_workshop_pipeline -t dev -p <your-profile>
 ```
 
-The bundle runs all seven lessons end to end as a multi-task job on serverless compute.
+The bundle runs all eight lessons end to end as a multi-task job on serverless compute.
 
 ## The lessons
 
@@ -125,6 +126,23 @@ dual-export pattern for keeping an existing observability tool (e.g. Datadog) in
 
 [`notebooks/07_otel_uc_integration.py`](notebooks/07_otel_uc_integration.py)
 
+### 8. Deploy the agent and route Playground traces back
+
+Wraps the agent as an `mlflow.pyfunc.ChatModel`, registers it in Unity Catalog, and creates a Mosaic
+AI Model Serving endpoint. Every AI Playground or curl call to the endpoint writes a trace into the
+same MLflow experiment lessons 2 to 6 read from, which closes the loop: production traffic feeds the
+same eval and monitoring surface as your offline traces.
+
+The non-obvious part is the **three-env-var pattern** on the served entity:
+
+- `ENABLE_MLFLOW_TRACING=true` flips the decorators ON in the serving container
+- `MLFLOW_TRACKING_URI=databricks` points at the workspace MLflow store (otherwise a local SQLite store is created inside the container and trace export silently fails)
+- `MLFLOW_EXPERIMENT_ID=<id>` routes captured traces to the named experiment
+
+Missing `MLFLOW_TRACKING_URI=databricks` is the most common gotcha.
+
+[`notebooks/08_deploy_agent.py`](notebooks/08_deploy_agent.py)
+
 ## Feature reference
 
 Each Databricks/MLflow capability used in the workshop, with a one-line role and a docs link.
@@ -142,6 +160,9 @@ Each Databricks/MLflow capability used in the workshop, with a one-line role and
 | Scheduled scorers (Beta) | Continuous scoring of production traces with sampling | [link](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/run-scorer-in-prod) |
 | OTel + Traces in Unity Catalog (Public Preview) | Trace data as a Delta table, queryable with SQL | [link](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/trace-unity-catalog) |
 | Foundation Model APIs | Hosts the LLM the agent calls and the judge uses | [link](https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/) |
+| Mosaic AI Model Serving + `ChatModel` | Hosts the deployed agent endpoint that AI Playground talks to | [link](https://docs.databricks.com/aws/en/machine-learning/model-serving/) |
+| Serving-endpoint tracing env vars | `ENABLE_MLFLOW_TRACING` + `MLFLOW_TRACKING_URI` + `MLFLOW_EXPERIMENT_ID` route Playground/curl call traces back to the named experiment | [link](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing) |
+| Canonical retriever-span schema | `page_content` + `metadata.doc_uri` renders retriever output as document cards in the MLflow trace UI | [link](https://mlflow.org/docs/latest/genai/concepts/span/#retriever-spans) |
 | Databricks Asset Bundles | Versioned, deployable wrapper for the workshop notebooks | [link](https://docs.databricks.com/aws/en/dev-tools/bundles/) |
 
 ## Repo layout
@@ -162,6 +183,7 @@ Each Databricks/MLflow capability used in the workshop, with a one-line role and
 │   ├── 05_judge_alignment.py                  Lesson 5
 │   ├── 06_production_monitoring.py            Lesson 6
 │   ├── 07_otel_uc_integration.py              Lesson 7
+│   ├── 08_deploy_agent.py                     Lesson 8
 │   ├── _resources/
 │   │   └── setup.py                           Shared agent + experiment setup
 │   └── images/
@@ -178,16 +200,19 @@ Each Databricks/MLflow capability used in the workshop, with a one-line role and
 | Lesson 2 trace count | If you use Run-all, the for-loop sometimes flushes only one trace because of how trace logging is buffered between cells. Run cells with Shift+Enter instead, or accept the smaller initial count. |
 | Scheduled scorer deserialization | Scorers defined inside notebooks can fail to deserialize on remote workers because their `__module__` resolves to `__main__`. The included `workshop_scorers.py` shows the production-grade pattern: define scorers in a regular Python module file. |
 | OTel + Traces in UC region availability | Public Preview; not all regions are supported yet. Confirm availability with your account team before relying on lesson 7's SQL examples. |
+| Lesson 8 endpoint provisioning | First deploy of the serving endpoint takes 5 to 15 minutes. Subsequent re-deploys with the same name reuse the existing endpoint container. Plan around this when running the bundle end to end. |
+| Lesson 8 trace propagation | Once the endpoint is READY, an AI Playground or curl call's trace shows up in the experiment within ~30 seconds. If it does not appear, the most likely cause is a missing env var on the served entity - verify all three with `databricks serving-endpoints get <name>`. |
 
 ## What's next
 
-When you finish the seven lessons:
+When you finish the eight lessons:
 
 - Replace the toy corpus in `notebooks/_resources/setup.py` with your own retrieval source (Vector Search index, your Delta table, etc.)
 - Replace the eval dataset in lesson 4 with a labeled trace set from your domain
 - Run lesson 5 with real SME labels from lesson 3 to actually calibrate the judge
 - Tune the sampling rates in lesson 6 to your judge cost budget
 - Configure OTel + Traces in UC in your workspace and wire the SQL queries in lesson 7 to your real catalog
+- Promote the lesson 8 endpoint to production-tier workload size, disable `scale_to_zero_enabled`, and wire UC Models aliases (`production` / `candidate`) for atomic blue/green deploys
 
 ## License
 

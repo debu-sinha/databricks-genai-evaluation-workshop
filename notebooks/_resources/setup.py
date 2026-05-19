@@ -72,15 +72,27 @@ CORPUS = {
 
 @mlflow.trace(span_type=SpanType.RETRIEVER)
 def retrieve(query: str, k: int = 3) -> list[dict]:
-    """Bag-of-keywords retrieval. Returns the k docs whose tokens overlap most with the query."""
+    """Return documents in MLflow's canonical retriever-span schema.
+
+    Each item has `page_content` (the chunk text) plus a `metadata` dict with
+    `doc_uri` (canonical identifier MLflow's trace UI uses as the title) and the
+    relevance `score`. The MLflow trace UI auto-renders this shape as document
+    cards instead of raw JSON. Reference:
+    https://mlflow.org/docs/latest/genai/concepts/span/#retriever-spans
+    """
     q_tokens = set(query.lower().split())
     scored = []
     for doc_id, text in CORPUS.items():
         d_tokens = set(text.lower().split())
         score = len(q_tokens & d_tokens)
-        scored.append({"doc_id": doc_id, "text": text, "score": score})
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    return [s for s in scored[:k] if s["score"] > 0]
+        scored.append(
+            {
+                "page_content": text,
+                "metadata": {"doc_uri": doc_id, "score": score},
+            }
+        )
+    scored.sort(key=lambda x: x["metadata"]["score"], reverse=True)
+    return [s for s in scored[:k] if s["metadata"]["score"] > 0]
 
 
 # COMMAND ----------
@@ -92,7 +104,7 @@ def generate(query: str, contexts: list[dict]) -> str:
     w = WorkspaceClient()
     if not contexts:
         return "I don't have enough information to answer that."
-    context_block = "\n\n".join(c["text"] for c in contexts)
+    context_block = "\n\n".join(c["page_content"] for c in contexts)
     prompt = (
         f"Answer the question using only the context below. Be concise. "
         f"If the context does not contain the answer, say you don't know.\n\n"
@@ -127,7 +139,10 @@ def answer_question(
     )
     contexts = retrieve(query)
     answer = generate(query, contexts)
-    return {"answer": answer, "contexts": [c["doc_id"] for c in contexts]}
+    return {
+        "answer": answer,
+        "contexts": [c["metadata"]["doc_uri"] for c in contexts],
+    }
 
 
 # COMMAND ----------
