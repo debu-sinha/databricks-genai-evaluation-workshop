@@ -45,8 +45,18 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install -U -qqqq mlflow databricks-sdk databricks-agents
+# MAGIC %pip install -U -qqqq mlflow databricks-sdk databricks-agents dspy
 # MAGIC dbutils.library.restartPython()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Why `dspy` is in the install line above
+# MAGIC
+# MAGIC The no-arg `judge.align()` call below routes to the SIMBA optimizer, which is implemented
+# MAGIC on top of DSPy. Other lessons don't need DSPy. If you want a no-extra-deps alternative,
+# MAGIC pass `optimizer=MemAlignOptimizer(reflection_lm=...)` (experimental but DSPy-free) or
+# MAGIC `optimizer=GEPAAlignmentOptimizer(...)` (also DSPy-based, but documented separately).
 
 # COMMAND ----------
 
