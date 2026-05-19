@@ -193,15 +193,20 @@ _recent = _mlflow.search_runs(
 )
 if not _recent.empty:
     _run_id = _recent.iloc[0]["run_id"]
-    _host = (
-        dbutils.notebook.entry_point.getDbutils()
-        .notebook()
-        .getContext()
-        .browserHostName()
-        .get()
-    )
-    print("Eval run created. Open directly:")
-    print(f"  https://{_host}/ml/experiments/{_exp.experiment_id}/runs/{_run_id}")
+    # Host detection works in both interactive and job contexts. browserHostName()
+    # returns None in job runs (no browser), so fall back to WorkspaceClient.
+    _host = None
+    try:
+        from databricks.sdk import WorkspaceClient as _WC
+
+        _host = _WC().config.host.replace("https://", "").replace("http://", "")
+    except Exception:
+        pass
+    if _host:
+        print("Eval run created. Open directly:")
+        print(f"  https://{_host}/ml/experiments/{_exp.experiment_id}/runs/{_run_id}")
+    else:
+        print(f"Eval run created. run_id={_run_id}, experiment_id={_exp.experiment_id}")
 
 # COMMAND ----------
 
