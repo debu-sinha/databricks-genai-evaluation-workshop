@@ -7,12 +7,6 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Challenges Addressed
-# MAGIC
-# MAGIC 1. How do you turn an arbitrary Python function into a scorer?
-# MAGIC 2. How do you build an LLM-as-a-judge that returns parseable categorical values?
-# MAGIC 3. How do you run an eval over a dataset and get results in the MLflow UI?
-# MAGIC
 # MAGIC ## What is happening?
 # MAGIC
 # MAGIC `mlflow.genai.evaluate(data, predict_fn, scorers)` calls your agent on each row of the dataset,
@@ -143,6 +137,7 @@ def answer_contains_expected_keyword(outputs: dict, expectations: dict) -> float
 
 # COMMAND ----------
 
+from typing import Literal
 from mlflow.genai.judges import make_judge
 
 relevance_judge = make_judge(
@@ -158,6 +153,7 @@ relevance_judge = make_judge(
         "Reply with only the single word, no punctuation, no explanation."
     ),
     model="databricks:/databricks-claude-sonnet-4-6",
+    feedback_value_type=Literal["yes", "partial", "no"],
 )
 
 # COMMAND ----------

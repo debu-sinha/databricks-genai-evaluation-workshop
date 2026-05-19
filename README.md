@@ -104,10 +104,11 @@ from `mlflow.genai.judges.make_judge`. Results show side-by-side trace compariso
 
 `judge.align(traces)` rewrites the judge's instructions to maximize agreement with human labels.
 Pairs every trace that has both a `HUMAN` and `LLM_JUDGE` assessment under the same name, runs
-MemAlign (default, cheaper and faster than the prior SIMBA default), GEPA (stronger when SME
-rationales are rich), or SIMBA (back-compat) over the prompt, and produces a new judge object
-you register for production use. Closes the loop: SMEs in lesson 3 produce ground truth, lesson 4
-runs the unaligned judge, this lesson aligns the two and reports the agreement lift.
+one of three optimizers - SIMBA (the [public-docs example](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/align-judges)),
+GEPA (stronger when SME rationales are rich), or MemAlign (default on current MLflow per the
+MLflow team May 2026, cheaper and faster than SIMBA) - over the prompt, and produces a new judge
+object you register for production use. Closes the loop: SMEs in lesson 3 produce ground truth,
+lesson 4 runs the unaligned judge, this lesson aligns the two and reports the agreement lift.
 
 [`notebooks/05_judge_alignment.py`](notebooks/05_judge_alignment.py)
 
@@ -172,7 +173,7 @@ Each Databricks/MLflow capability used in the workshop, with a one-line role and
 .
 ├── README.md                                  This file
 ├── databricks.yml                             Databricks Asset Bundle config
-├── workshop_scorers.py                        Reusable scorer module (lesson 6 advanced)
+├── workshop_scorers.py                        Reusable scorer module imported by lesson 6
 ├── images/
 │   └── architecture.svg                       Workshop flow diagram
 ├── notebooks/
@@ -199,10 +200,11 @@ Each Databricks/MLflow capability used in the workshop, with a one-line role and
 |---|---|
 | Pip install on serverless | Can stall briefly during the resolver step. Wait an extra 2-3 minutes before interrupting. |
 | Lesson 2 trace count | If you use Run-all, the for-loop sometimes flushes only one trace because of how trace logging is buffered between cells. Run cells with Shift+Enter instead, or accept the smaller initial count. |
-| Scheduled scorer deserialization | Scorers defined inside notebooks can fail to deserialize on remote workers because their `__module__` resolves to `__main__`. The included `workshop_scorers.py` shows the production-grade pattern: define scorers in a regular Python module file. |
+| Scheduled scorer deserialization | Scorers defined inside notebooks can fail to deserialize on remote workers because their `__module__` resolves to `__main__`. Lesson 6 imports its scorers from `workshop_scorers.py` at the repo root for exactly this reason - it's the production-grade pattern. |
 | OTel + Traces in UC region availability | Public Preview; not all regions are supported yet. Confirm availability with your account team before relying on lesson 7's SQL examples. |
 | Lesson 8 endpoint provisioning | First deploy of the serving endpoint takes 5 to 15 minutes. Subsequent re-deploys with the same name reuse the existing endpoint container. Plan around this when running the bundle end to end. |
 | Lesson 8 trace propagation | Once the endpoint is READY, an AI Playground or curl call's trace shows up in the experiment within ~30 seconds. If it does not appear, the most likely cause is a missing env var on the served entity - verify all three with `databricks serving-endpoints get <name>`. |
+| Lesson 8 third env var vs docs | The [prod-tracing docs page](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing) lists only `ENABLE_MLFLOW_TRACING` and `MLFLOW_EXPERIMENT_ID`. `MLFLOW_TRACKING_URI=databricks` is an empirically-observed requirement on current serving runtimes - we verified this on a fresh deploy on 2026-05-18. Without it the runtime spins up a container-local SQLite store and trace export fails with `RESOURCE_DOES_NOT_EXIST: Node ID 1 does not exist.` in the serving logs. |
 
 ## What's next
 

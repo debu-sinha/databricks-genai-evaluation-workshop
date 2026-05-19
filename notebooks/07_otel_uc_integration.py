@@ -8,12 +8,6 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Challenges Addressed
-# MAGIC
-# MAGIC 1. How do you query trace data with SQL instead of the MLflow API?
-# MAGIC 2. How do existing observability pipelines (Datadog, Honeycomb, etc.) coexist with Databricks tracing?
-# MAGIC 3. What can your data team do once trace data is just another Delta table?
-# MAGIC
 # MAGIC ## What is happening?
 # MAGIC
 # MAGIC When OTel + Traces in Unity Catalog is enabled for the workspace, MLflow writes every trace

@@ -85,11 +85,12 @@
 # MAGIC ## 5/ Calibrate the LLM judge against SME labels
 # MAGIC
 # MAGIC `judge.align(traces)` rewrites the judge's instructions to maximize agreement with paired
-# MAGIC `HUMAN` + `LLM_JUDGE` assessments under the same name. Default optimizer is MemAlign
-# MAGIC (cheaper and faster than the prior SIMBA default); GEPA available for harder cases.
-# MAGIC Returns a new judge object you register so production monitoring uses the calibrated
-# MAGIC version. This is the closed loop: SMEs in lesson 3 produce ground truth, lesson 4 runs the
-# MAGIC unaligned judge, lesson 5 aligns and reports the lift.
+# MAGIC `HUMAN` + `LLM_JUDGE` assessments under the same name. Three optimizers are available:
+# MAGIC SIMBA (still the public-docs example), GEPA (stronger when SME rationales are rich), and
+# MAGIC MemAlign (default on current MLflow per the MLflow team, May 2026 - cheaper and faster
+# MAGIC than SIMBA). Returns a new judge object you register so production monitoring uses the
+# MAGIC calibrated version. This is the closed loop: SMEs in lesson 3 produce ground truth,
+# MAGIC lesson 4 runs the unaligned judge, lesson 5 aligns and reports the lift.
 # MAGIC
 # MAGIC Open [`05_judge_alignment`]($./05_judge_alignment)
 
@@ -128,7 +129,8 @@
 # MAGIC The non-obvious part is three env vars on the served entity (`ENABLE_MLFLOW_TRACING`,
 # MAGIC `MLFLOW_TRACKING_URI`, `MLFLOW_EXPERIMENT_ID`). Missing `MLFLOW_TRACKING_URI=databricks` is
 # MAGIC the most common gotcha - the serving runtime falls back to a container-local file store and
-# MAGIC traces never reach the experiment.
+# MAGIC traces never reach the experiment. The public docs page lists only the first and third;
+# MAGIC the second is an empirically-observed requirement we verified on a fresh deploy 2026-05-18.
 # MAGIC
 # MAGIC Open [`08_deploy_agent`]($./08_deploy_agent)
 

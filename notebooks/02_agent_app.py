@@ -8,12 +8,6 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Challenges Addressed
-# MAGIC
-# MAGIC 1. How do you wrap an existing agent so MLflow captures structured traces?
-# MAGIC 2. How do you tag traces with session and user so the UI filter chips work?
-# MAGIC 3. How do you generate enough realistic trace volume for the rest of the lessons to operate on?
-# MAGIC
 # MAGIC ## What is happening?
 # MAGIC
 # MAGIC The agent has three steps - top-level chain, retriever, generator - each decorated with

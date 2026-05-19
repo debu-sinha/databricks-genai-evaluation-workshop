@@ -44,43 +44,55 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Define the scorers
+# MAGIC ### Load the scorers from `workshop_scorers.py`
 # MAGIC
-# MAGIC Same shape as lesson 4. The cheap safety scorer runs at 100% sampling, the LLM judge at 10% to
-# MAGIC keep cost bounded.
+# MAGIC The cheap safety scorer runs at 100% sampling, the LLM judge at 10% to keep cost bounded.
 # MAGIC
-# MAGIC The `@scorer` decorator must be applied to a function whose body is fully self-contained (no
-# MAGIC closures over notebook scope, all imports inline if any). Otherwise the scheduled-scorer
-# MAGIC subsystem can't deserialize the function on remote workers later.
+# MAGIC Scorers used by the scheduled-scorer subsystem must be importable as a real Python module,
+# MAGIC not defined inside a notebook. Functions defined inside a notebook get `__module__` set to
+# MAGIC `__main__`, which the scheduled-scorer remote workers can't reconstruct, and registration
+# MAGIC silently fails to fire. Putting them in `workshop_scorers.py` at the repo root makes the
+# MAGIC import path stable.
 
 # COMMAND ----------
 
-from mlflow.genai.scorers import scorer, ScorerSamplingConfig
-from mlflow.genai.judges import make_judge
+import sys
+import os
+from mlflow.genai.scorers import ScorerSamplingConfig, get_scorer
 
+# Databricks Repos puts the repo root on sys.path automatically when the notebook
+# runs inside a Repo. For Workspace-imported notebooks we add it explicitly.
+_repo_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
 
-@scorer
-def answer_non_empty(outputs):
-    if outputs is None:
-        return 0.0
-    answer = ""
-    if isinstance(outputs, dict):
-        answer = outputs.get("answer") or ""
-    elif isinstance(outputs, str):
-        answer = outputs
-    return 1.0 if str(answer).strip() else 0.0
+from workshop_scorers import answer_non_empty, make_relevance_judge
 
+# MAGIC %md
+# MAGIC ### Pick up the aligned `relevance` judge from lesson 5 if it's there
+# MAGIC
+# MAGIC `get_scorer(name="relevance")` retrieves the version `aligned_judge.register(...)` saved at
+# MAGIC the end of lesson 5. If lesson 5 hasn't run on this experiment yet, fall back to a fresh
+# MAGIC unaligned judge from the workshop_scorers module so the rest of this lesson still works.
 
-relevance_judge = make_judge(
-    name="relevance",
-    instructions=(
-        "You are evaluating whether an answer is relevant to a user's question.\n\n"
-        "Question: {{ inputs }}\n"
-        "Answer: {{ outputs }}\n\n"
-        "Reply with exactly one word from this set: yes, partial, no."
-    ),
-    model="databricks:/databricks-claude-sonnet-4-6",
-)
+# COMMAND ----------
+
+try:
+    relevance_judge = get_scorer(name="relevance")
+    print(
+        f"Picked up registered '{relevance_judge.name}' judge (aligned version from lesson 5)."
+    )
+except Exception as e:
+    if "not found" in str(e).lower() or "does not exist" in str(e).lower():
+        relevance_judge = make_relevance_judge()
+        print(
+            "No registered 'relevance' judge found. Using fresh judge from workshop_scorers."
+        )
+        print(
+            "Run lesson 5 to align the judge against SME labels before re-running this notebook."
+        )
+    else:
+        raise
 
 # COMMAND ----------
 

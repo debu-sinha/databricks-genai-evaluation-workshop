@@ -31,6 +31,13 @@
 # MAGIC (`ENABLE_MLFLOW_TRACING` defaults to false) or pointed at a container-local file store
 # MAGIC (the default when `MLFLOW_TRACKING_URI` is unset), and traces never reach the experiment.
 # MAGIC
+# MAGIC Note on the third env var: the [public docs page](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing)
+# MAGIC lists only `ENABLE_MLFLOW_TRACING` and `MLFLOW_EXPERIMENT_ID`. `MLFLOW_TRACKING_URI=databricks`
+# MAGIC is an empirically-observed requirement on serving runtimes where the default tracking URI
+# MAGIC falls back to a container-local SQLite store. We verified this on a fresh deploy on
+# MAGIC 2026-05-18: omitting the third var produced `RESOURCE_DOES_NOT_EXIST: Node ID 1 does not
+# MAGIC exist.` in the serving logs and traces never appeared in the experiment.
+# MAGIC
 # MAGIC Reference: [Production tracing for MLflow GenAI](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing).
 
 # COMMAND ----------
@@ -268,3 +275,6 @@ print(
 # MAGIC   production experiment so quality regression is visible.
 # MAGIC - Plan endpoint version cutovers via UC Models aliases (`production`, `candidate`) for atomic
 # MAGIC   blue/green deploys.
+# MAGIC - If your agent needs streaming responses, swap `mlflow.pyfunc.ChatModel` for
+# MAGIC   `mlflow.pyfunc.ResponsesAgent`. Same Playground compatibility, additional streaming-event
+# MAGIC   capture in the trace.

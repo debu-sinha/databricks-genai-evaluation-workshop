@@ -6,15 +6,17 @@
 # MAGIC SMEs often have a stricter standard, or care about edge cases the prompt missed. This lesson closes the loop: the SME labels
 # MAGIC collected via the Review App in lesson 3 become the ground truth, and `judge.align()` rewrites
 # MAGIC the judge's instructions to match SME judgment.
+# MAGIC
+# MAGIC This notebook depends on Databricks runtime built-ins (`display`, the `%run` magic, the `dbutils` global). It will
+# MAGIC `NameError` if run outside a Databricks workspace.
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Challenges Addressed
+# MAGIC ## Two questions this lesson answers
 # MAGIC
-# MAGIC 1. How do you measure whether an LLM judge agrees with your SMEs?
-# MAGIC 2. How do you systematically improve the judge instead of guessing at prompt edits?
-# MAGIC 3. Once aligned, how do you deploy the better judge so production monitoring uses it?
+# MAGIC - Whether your LLM judge actually agrees with your SMEs (vs. you assuming it does because the prompt sounds reasonable)
+# MAGIC - Once you measure disagreement, how to systematically rewrite the judge prompt instead of guessing
 # MAGIC
 # MAGIC ## What is happening?
 # MAGIC
@@ -23,10 +25,13 @@
 # MAGIC 1. **Pair assessments by trace.** Every trace that has both an `LLM_JUDGE` assessment named
 # MAGIC    `relevance` (from lesson 4) and a `HUMAN` assessment named `relevance` (from lesson 3) is
 # MAGIC    a paired example. The names must match exactly.
-# MAGIC 2. **Run `judge.align(paired)`.** MLflow runs an optimizer (default MemAlign, GEPA available
-# MAGIC    for harder cases, SIMBA still selectable for back-compat) over the judge's instruction
-# MAGIC    string to maximize agreement with the human labels. Returns a new judge object; the
-# MAGIC    original is untouched.
+# MAGIC 2. **Run `judge.align(paired)`.** MLflow runs an optimizer over the judge's instruction
+# MAGIC    string to maximize agreement with the human labels. Three optimizers are available:
+# MAGIC    SIMBA (still the example in the public docs), GEPA (stronger when SME rationales are
+# MAGIC    rich), and MemAlign (memory-augmented, cheaper and faster than SIMBA in our testing).
+# MAGIC    We use the no-argument form below, which the MLflow team confirmed on 2026-05-13 now
+# MAGIC    defaults to MemAlign; the [public docs page](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/align-judges)
+# MAGIC    still shows SIMBA in the example. Returns a new judge object; the original is untouched.
 # MAGIC 3. **Register the aligned judge.** Save it as a named scorer so lesson 6's production
 # MAGIC    monitoring uses the calibrated version instead of the original.
 # MAGIC
@@ -36,6 +41,11 @@
 # MAGIC same name. In a real workflow the human side comes from SMEs filling out the labeling session
 # MAGIC in the Review App. For workshop reproducibility this notebook will fall back to logging
 # MAGIC synthetic HUMAN labels if no real ones exist yet, with the rule clearly stated below.
+
+# COMMAND ----------
+
+# MAGIC %pip install -U -qqqq mlflow databricks-sdk databricks-agents
+# MAGIC dbutils.library.restartPython()
 
 # COMMAND ----------
 
@@ -220,9 +230,12 @@ if len(paired) >= 10:
 # MAGIC %md
 # MAGIC ## Step 4 - Run alignment
 # MAGIC
-# MAGIC `judge.align(traces)` returns a new judge with rewritten instructions. The default optimizer
-# MAGIC is MemAlign (memory-augmented alignment, cheaper and faster than the prior SIMBA default).
-# MAGIC For stronger but slower alignment when SME rationales are rich, swap in
+# MAGIC `judge.align(traces)` returns a new judge with rewritten instructions. The no-argument form
+# MAGIC uses MLflow's current default optimizer (confirmed by the MLflow team on 2026-05-13 to be
+# MAGIC MemAlign, memory-augmented alignment, cheaper and faster than the prior SIMBA default).
+# MAGIC The public docs example at https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/align-judges
+# MAGIC still shows SIMBA; either is a reasonable choice depending on which version of MLflow your
+# MAGIC workspace runs. For stronger but slower alignment when SME rationales are rich, swap in
 # MAGIC `optimizer=GEPA(...)` from `mlflow.genai.judges.optimizers`.
 
 # COMMAND ----------
