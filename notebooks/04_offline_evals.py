@@ -179,16 +179,39 @@ results = mlflow.genai.evaluate(
     scorers=[answer_contains_expected_keyword, relevance_judge],
 )
 
+# Print a direct link to the eval run. The Evaluation runs tab in some
+# workspaces has a sticky user-level filter (e.g. `params.model = "tree"`)
+# inherited from the AutoML / forecasting onboarding flow that hides freshly
+# created runs. Clicking this URL bypasses the filter and lands you on the run.
+import mlflow as _mlflow
+
+_exp = _mlflow.get_experiment_by_name(EXPERIMENT_PATH)
+_recent = _mlflow.search_runs(
+    experiment_ids=[_exp.experiment_id],
+    max_results=1,
+    order_by=["start_time DESC"],
+)
+if not _recent.empty:
+    _run_id = _recent.iloc[0]["run_id"]
+    _host = (
+        dbutils.notebook.entry_point.getDbutils()
+        .notebook()
+        .getContext()
+        .browserHostName()
+        .get()
+    )
+    print("Eval run created. Open directly:")
+    print(f"  https://{_host}/ml/experiments/{_exp.experiment_id}/runs/{_run_id}")
+
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## What to verify
 # MAGIC
-# MAGIC 1. Open the **Experiments** left nav, find your experiment, click **Runs**
-# MAGIC 2. Click the most recent run (auto-named like `tasteful-cub-576`)
-# MAGIC 3. Look at **Metrics** - both `answer_contains_expected_keyword/mean` and judge metrics should
+# MAGIC 1. Click the direct eval run URL printed above. (If you go via the **Experiments** -> **Evaluation runs** tab and don't see your run, check the filter row at the top - some workspaces have a sticky `params.model = "tree"` filter from the AutoML onboarding that hides new runs. Click the X on the filter chip to clear it.)
+# MAGIC 2. Look at **Metrics** - both `answer_contains_expected_keyword/mean` and judge metrics should
 # MAGIC    appear (judge metrics may be a value distribution rather than a mean depending on output type)
-# MAGIC 4. Click into individual traces. The `relevance` value should be `yes`, `partial`, or `no` -
+# MAGIC 3. Click into individual traces. The `relevance` value should be `yes`, `partial`, or `no` -
 # MAGIC    not `None`. If you see `None`, the judge prompt isn't constraining output enough.
 # MAGIC
 # MAGIC Continue to [`05_judge_alignment`]($./05_judge_alignment) to calibrate this judge against the SME labels from lesson 3.
