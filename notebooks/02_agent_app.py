@@ -21,7 +21,7 @@
 # MAGIC `mlflow.update_current_trace(metadata=...)` writes canonical session and user fields that the
 # MAGIC MLflow UI uses to drive its filter chips.
 # MAGIC
-# MAGIC We then call the agent on a query bank to populate the experiment with ~24 traces under three
+# MAGIC We then call the agent on a query bank to populate the experiment with ~23 traces under three
 # MAGIC simulated users. Lessons 3-6 read from this trace surface.
 # MAGIC
 # MAGIC Reference: [MLflow tracing](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/) and
@@ -96,7 +96,7 @@ print(f"populated {ok}/{len(shuffled)} traces")
 # MAGIC ## What to verify
 # MAGIC
 # MAGIC 1. Open the **Experiments** left nav, find `agent_traces`
-# MAGIC 2. Click the **Traces** tab. You should see ~24 traces named `answer_question`
+# MAGIC 2. Click the **Traces** tab. You should see ~23 traces named `answer_question`
 # MAGIC 3. Click any trace. The span tree shows `answer_question` (CHAIN) -> `retrieve` (RETRIEVER) -> `generate` (LLM)
 # MAGIC 4. In the Metadata panel, find `mlflow.trace.user` and `mlflow.trace.session`
 # MAGIC 5. Use the **Filter** chip above the trace list to filter by user (`alice@example.com`). The list narrows.

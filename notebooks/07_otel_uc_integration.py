@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Lesson 6 - Query traces in Unity Catalog
+# MAGIC # Lesson 7 - Query traces in Unity Catalog
 # MAGIC
 # MAGIC OTel + Traces in Unity Catalog stores the same trace data in a Delta table that you can query
 # MAGIC with plain SQL, point Genie or AI/BI dashboards at, and govern with Unity Catalog ACLs.
@@ -126,4 +126,5 @@ if experiment:
 # MAGIC    your catalog/schema and confirm the same trace IDs come back.
 # MAGIC 3. Open the architecture diagram in `./images/architecture.svg` for a visual of the full data flow.
 # MAGIC
-# MAGIC You've finished the workshop. Next steps in the [introduction]($./00_workshop_introduction).
+# MAGIC Continue to [`08_deploy_agent`]($./08_deploy_agent) to wrap the agent as a serving endpoint
+# MAGIC and route Playground calls back into this same experiment.

@@ -13,8 +13,10 @@
 # MAGIC - An offline evaluation run with a custom code-based scorer and an LLM-as-a-judge
 # MAGIC - Two scheduled scorers monitoring production traces with sampling
 # MAGIC - A clear picture of how OpenTelemetry traces flow into Unity Catalog Delta tables and how to query them with SQL
+# MAGIC - A serving endpoint hosting the agent with the canonical three-env-var trace-routing pattern, so AI Playground calls land in the same MLflow experiment as your offline evals
 # MAGIC
-# MAGIC Plan on about 75 minutes if you run all seven lessons in order.
+# MAGIC Plan on about 90 minutes if you run all eight lessons in order. Lesson 8 adds endpoint
+# MAGIC provisioning wait time on top of the others.
 
 # COMMAND ----------
 
@@ -83,10 +85,11 @@
 # MAGIC ## 5/ Calibrate the LLM judge against SME labels
 # MAGIC
 # MAGIC `judge.align(traces)` rewrites the judge's instructions to maximize agreement with paired
-# MAGIC `HUMAN` + `LLM_JUDGE` assessments under the same name. Default optimizer is SIMBA;
-# MAGIC GEPA and MemAlign also available. Returns a new judge object you register so production
-# MAGIC monitoring uses the calibrated version. This is the closed loop: SMEs in lesson 3 produce
-# MAGIC ground truth, lesson 4 runs the unaligned judge, lesson 5 aligns and reports the lift.
+# MAGIC `HUMAN` + `LLM_JUDGE` assessments under the same name. Default optimizer is MemAlign
+# MAGIC (cheaper and faster than the prior SIMBA default); GEPA available for harder cases.
+# MAGIC Returns a new judge object you register so production monitoring uses the calibrated
+# MAGIC version. This is the closed loop: SMEs in lesson 3 produce ground truth, lesson 4 runs the
+# MAGIC unaligned judge, lesson 5 aligns and reports the lift.
 # MAGIC
 # MAGIC Open [`05_judge_alignment`]($./05_judge_alignment)
 
@@ -115,6 +118,23 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ## 8/ Deploy the agent and route Playground traces back
+# MAGIC
+# MAGIC Wraps the agent as an `mlflow.pyfunc.ChatModel`, registers it in Unity Catalog, and creates a
+# MAGIC Mosaic AI Model Serving endpoint. Every AI Playground or curl call to the endpoint writes a
+# MAGIC trace into the same experiment lessons 2 to 6 read from. Closes the production loop: live
+# MAGIC traffic feeds the same eval surface as your offline runs.
+# MAGIC
+# MAGIC The non-obvious part is three env vars on the served entity (`ENABLE_MLFLOW_TRACING`,
+# MAGIC `MLFLOW_TRACKING_URI`, `MLFLOW_EXPERIMENT_ID`). Missing `MLFLOW_TRACKING_URI=databricks` is
+# MAGIC the most common gotcha - the serving runtime falls back to a container-local file store and
+# MAGIC traces never reach the experiment.
+# MAGIC
+# MAGIC Open [`08_deploy_agent`]($./08_deploy_agent)
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## Feature reference
 # MAGIC
 # MAGIC Each Databricks/MLflow capability used in the workshop, with a one-line role and a docs link.
@@ -132,6 +152,9 @@
 # MAGIC | Scheduled scorers (Beta) | Continuous scoring of production traces with sampling | [docs](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/run-scorer-in-prod) |
 # MAGIC | OTel + Traces in Unity Catalog (Public Preview) | Trace data as a Delta table, queryable with SQL | [docs](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/trace-unity-catalog) |
 # MAGIC | Foundation Model APIs | Hosts the LLM the agent calls and the judge uses | [docs](https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/) |
+# MAGIC | Mosaic AI Model Serving + `ChatModel` | Hosts the deployed agent endpoint that AI Playground talks to | [docs](https://docs.databricks.com/aws/en/machine-learning/model-serving/) |
+# MAGIC | Serving-endpoint tracing env vars | `ENABLE_MLFLOW_TRACING` + `MLFLOW_TRACKING_URI` + `MLFLOW_EXPERIMENT_ID` route Playground / curl call traces back to the named experiment | [docs](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing) |
+# MAGIC | Canonical retriever-span schema | `page_content` + `metadata.doc_uri` renders retriever output as document cards in the MLflow trace UI | [docs](https://mlflow.org/docs/latest/genai/concepts/span/#retriever-spans) |
 # MAGIC | Databricks Asset Bundles | Versioned, deployable wrapper for the workshop notebooks | [docs](https://docs.databricks.com/aws/en/dev-tools/bundles/) |
 
 # COMMAND ----------
@@ -146,5 +169,6 @@
 # MAGIC - Run lesson 5 with real SME labels from lesson 3 to actually calibrate the judge
 # MAGIC - Tune the sampling rates in lesson 6 to your judge cost budget
 # MAGIC - Configure OTel + Traces in UC in your workspace and wire the SQL queries in lesson 7 to your real catalog
+# MAGIC - Promote the lesson 8 endpoint to production-tier workload size, disable scale-to-zero, and wire UC Models aliases (`production` / `candidate`) for atomic blue/green deploys
 # MAGIC
 # MAGIC Open [`01_pre_flight_check`]($./01_pre_flight_check) when you're ready.

@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Lesson 7 - Deploy the agent and route Playground traces back to MLflow
+# MAGIC # Lesson 8 - Deploy the agent and route Playground traces back to MLflow
 # MAGIC
 # MAGIC Wraps the `answer_question` chain from lesson 2 as an MLflow `ChatModel`, registers it in
 # MAGIC Unity Catalog, and creates a Mosaic AI Model Serving endpoint. Once the endpoint is `READY`
@@ -28,9 +28,8 @@
 # MAGIC
 # MAGIC Three environment variables on the served entity wire the trace stream back to the named
 # MAGIC workspace experiment. Without these the serving runtime's tracing path is either off
-# MAGIC (`ENABLE_MLFLOW_TRACING` defaults to false) or pointed at a local SQLite store inside the
-# MAGIC container (`MLFLOW_TRACKING_URI` defaults to "file" inside serving), and traces never reach
-# MAGIC the experiment.
+# MAGIC (`ENABLE_MLFLOW_TRACING` defaults to false) or pointed at a container-local file store
+# MAGIC (the default when `MLFLOW_TRACKING_URI` is unset), and traces never reach the experiment.
 # MAGIC
 # MAGIC Reference: [Production tracing for MLflow GenAI](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/prod-tracing).
 

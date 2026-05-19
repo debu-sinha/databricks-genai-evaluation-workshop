@@ -104,9 +104,10 @@ from `mlflow.genai.judges.make_judge`. Results show side-by-side trace compariso
 
 `judge.align(traces)` rewrites the judge's instructions to maximize agreement with human labels.
 Pairs every trace that has both a `HUMAN` and `LLM_JUDGE` assessment under the same name, runs
-SIMBA (default), GEPA, or MemAlign over the prompt, and produces a new judge object you register
-for production use. Closes the loop: SMEs in lesson 3 produce ground truth, lesson 4 runs the
-unaligned judge, this lesson aligns the two and reports the agreement lift.
+MemAlign (default, cheaper and faster than the prior SIMBA default), GEPA (stronger when SME
+rationales are rich), or SIMBA (back-compat) over the prompt, and produces a new judge object
+you register for production use. Closes the loop: SMEs in lesson 3 produce ground truth, lesson 4
+runs the unaligned judge, this lesson aligns the two and reports the agreement lift.
 
 [`notebooks/05_judge_alignment.py`](notebooks/05_judge_alignment.py)
 

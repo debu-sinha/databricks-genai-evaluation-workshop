@@ -23,9 +23,10 @@
 # MAGIC 1. **Pair assessments by trace.** Every trace that has both an `LLM_JUDGE` assessment named
 # MAGIC    `relevance` (from lesson 4) and a `HUMAN` assessment named `relevance` (from lesson 3) is
 # MAGIC    a paired example. The names must match exactly.
-# MAGIC 2. **Run `judge.align(paired)`.** MLflow runs an optimizer (default SIMBA, also GEPA and
-# MAGIC    MemAlign) over the judge's instruction string to maximize agreement with the human labels.
-# MAGIC    Returns a new judge object; the original is untouched.
+# MAGIC 2. **Run `judge.align(paired)`.** MLflow runs an optimizer (default MemAlign, GEPA available
+# MAGIC    for harder cases, SIMBA still selectable for back-compat) over the judge's instruction
+# MAGIC    string to maximize agreement with the human labels. Returns a new judge object; the
+# MAGIC    original is untouched.
 # MAGIC 3. **Register the aligned judge.** Save it as a named scorer so lesson 6's production
 # MAGIC    monitoring uses the calibrated version instead of the original.
 # MAGIC
@@ -220,8 +221,9 @@ if len(paired) >= 10:
 # MAGIC ## Step 4 - Run alignment
 # MAGIC
 # MAGIC `judge.align(traces)` returns a new judge with rewritten instructions. The default optimizer
-# MAGIC is SIMBA (DSPy-based prompt optimization, no LLM reflection). For stronger but slower
-# MAGIC alignment, swap in `optimizer=GEPA(...)` from `mlflow.genai.judges.optimizers`.
+# MAGIC is MemAlign (memory-augmented alignment, cheaper and faster than the prior SIMBA default).
+# MAGIC For stronger but slower alignment when SME rationales are rich, swap in
+# MAGIC `optimizer=GEPA(...)` from `mlflow.genai.judges.optimizers`.
 
 # COMMAND ----------
 
