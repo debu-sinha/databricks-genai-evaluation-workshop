@@ -86,8 +86,19 @@ def check_mlflow_experiment():
     import mlflow
     from databricks.sdk import WorkspaceClient
 
-    user = WorkspaceClient().current_user.me().user_name
-    path = f"/Workspace/Users/{user}/mlflow_evals_workshop/agent_traces"
+    w = WorkspaceClient()
+    user = w.current_user.me().user_name
+    parent = f"/Workspace/Users/{user}/mlflow_evals_workshop"
+    path = f"{parent}/agent_traces"
+
+    # mlflow.set_experiment does not recursively create parent workspace folders.
+    # Pre-create the parent so first-run users do not hit
+    # `RESOURCE_DOES_NOT_EXIST: Parent directory does not exist`.
+    try:
+        w.workspace.mkdirs(parent)
+    except Exception:
+        pass
+
     mlflow.set_experiment(path)
     exp = mlflow.get_experiment_by_name(path)
     assert exp is not None, f"experiment not found at {path}"

@@ -68,21 +68,37 @@ USERS = [
     ("batch@example.com", "session-batch-001"),
 ]
 
-random.seed(2026)
+# No random.seed here on purpose. Seeding makes the call ordering deterministic
+# across runs, and on serverless tracing we have seen that determinism cause
+# trace ID collisions on re-runs ("a trace with ID ... already exists"). Each
+# run now shuffles freshly so the trace surface is unique across re-runs.
 shuffled = DEMO_QUERIES.copy()
 random.shuffle(shuffled)
 
 ok = 0
+duplicates = 0
+errors = 0
 for query in shuffled:
     user_id, session_id = random.choice(USERS)
     try:
         answer_question(query=query, session_id=session_id, user_id=user_id)
         ok += 1
     except Exception as e:
-        print(f"  iter failed: {type(e).__name__}: {str(e)[:200]}")
+        msg = str(e)
+        if "already exists" in msg.lower():
+            duplicates += 1
+        else:
+            errors += 1
+            print(f"  iter failed: {type(e).__name__}: {msg[:200]}")
     time.sleep(0.3)
 
 print(f"populated {ok}/{len(shuffled)} traces")
+if duplicates:
+    print(
+        f"skipped {duplicates} duplicate trace IDs (safe on re-run, expected on second invocation of this cell)"
+    )
+if errors:
+    print(f"saw {errors} non-duplicate errors above")
 
 # COMMAND ----------
 
