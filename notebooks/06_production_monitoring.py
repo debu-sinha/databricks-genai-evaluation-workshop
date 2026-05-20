@@ -68,11 +68,13 @@ if _repo_root not in sys.path:
 
 from workshop_scorers import answer_non_empty, make_relevance_judge
 
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Pick up the aligned `relevance` judge from lesson 5 if it's there
 # MAGIC
 # MAGIC `get_scorer(name="relevance")` retrieves the version `aligned_judge.register(...)` saved at
-# MAGIC the end of lesson 5. If lesson 5 hasn't run on this experiment yet, fall back to a fresh
+# MAGIC the end of lesson 5. If lesson 5 has not yet run on this experiment, fall back to a fresh
 # MAGIC unaligned judge from the workshop_scorers module so the rest of this lesson still works.
 
 # COMMAND ----------
