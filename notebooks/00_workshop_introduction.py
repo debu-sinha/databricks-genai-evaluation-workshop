@@ -84,14 +84,16 @@
 # MAGIC %md
 # MAGIC ## 5/ Calibrate the LLM judge against SME labels
 # MAGIC
-# MAGIC `judge.align(traces)` rewrites the judge's instructions to maximize agreement with paired
-# MAGIC `HUMAN` + `LLM_JUDGE` assessments under the same name. Three optimizers are available:
-# MAGIC **SIMBA** (the no-arg default, DSPy-based), **GEPA** (LLM-driven reflection, stronger when
-# MAGIC SME rationales are rich), and **MemAlign** (memory-augmented, experimental — MLflow team
-# MAGIC indicated on 2026-05-13 this is a planned future default). Returns a new judge object you
-# MAGIC register so production monitoring uses the calibrated version. This is the closed loop:
-# MAGIC SMEs in lesson 3 produce ground truth, lesson 4 runs the unaligned judge, lesson 5 aligns
-# MAGIC and reports the lift.
+# MAGIC `judge.align(traces, optimizer=...)` rewrites the judge's instructions to maximize agreement
+# MAGIC with paired `HUMAN` + `LLM_JUDGE` assessments under the same name. Three optimizers ship in
+# MAGIC `mlflow.genai.judges.optimizers`: **SIMBA** (the no-arg default, DSPy-based), **GEPA**
+# MAGIC (LLM-driven reflection, stronger when SME rationales are rich), and **MemAlign**
+# MAGIC (memory-augmented, experimental, MLflow team flagged as the planned future default on
+# MAGIC 2026-05-13). Lesson 5 explicitly uses MemAlign to demonstrate the parameter pattern and
+# MAGIC put the workshop on the same algorithm the MLflow team is moving the default toward.
+# MAGIC Returns a new judge object you register so production monitoring uses the calibrated
+# MAGIC version. This is the closed loop: SMEs in lesson 3 produce ground truth, lesson 4 runs
+# MAGIC the unaligned judge, lesson 5 aligns and reports the lift.
 # MAGIC
 # MAGIC Open [`05_judge_alignment`]($./05_judge_alignment)
 

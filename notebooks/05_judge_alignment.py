@@ -25,14 +25,13 @@
 # MAGIC 1. **Pair assessments by trace.** Every trace that has both an `LLM_JUDGE` assessment named
 # MAGIC    `relevance` (from lesson 4) and a `HUMAN` assessment named `relevance` (from lesson 3) is
 # MAGIC    a paired example. The names must match exactly.
-# MAGIC 2. **Run `judge.align(paired)`.** MLflow runs an optimizer over the judge's instruction
-# MAGIC    string to maximize agreement with the human labels. Three optimizers are available:
-# MAGIC    **SIMBA** (Simplified Multi-Bootstrap Aggregation, DSPy-based, the no-arg default per
-# MAGIC    the [docs](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/align-judges)
-# MAGIC    and current source), **GEPA** (LLM-driven reflection, stronger when SME rationales
-# MAGIC    are rich), and **MemAlign** (memory-augmented, currently experimental). The MLflow team
-# MAGIC    indicated on 2026-05-13 that MemAlign is a likely future default once it leaves
-# MAGIC    experimental status. Returns a new judge object; the original is untouched.
+# MAGIC 2. **Run `judge.align(paired, optimizer=MemAlignOptimizer(...))`.** MLflow runs the
+# MAGIC    optimizer over the judge's instruction string to maximize agreement with the human
+# MAGIC    labels. This lesson explicitly uses MemAlign (memory-augmented, currently
+# MAGIC    experimental, MLflow team flagged as the planned future default on 2026-05-13).
+# MAGIC    The no-arg `judge.align(paired)` form would route to SIMBA (the current documented
+# MAGIC    default); GEPA is available for stronger LLM-reflection alignment. Returns a new
+# MAGIC    judge object; the original is untouched.
 # MAGIC 3. **Register the aligned judge.** Save it as a named scorer so lesson 6's production
 # MAGIC    monitoring uses the calibrated version instead of the original.
 # MAGIC
@@ -53,12 +52,11 @@
 # MAGIC %md
 # MAGIC ### Why `dspy` is in the install line above
 # MAGIC
-# MAGIC The no-arg `judge.align()` call below routes to the SIMBA optimizer, which is implemented
-# MAGIC on top of DSPy. Other lessons don't need DSPy, so we add it only here.
-# MAGIC
-# MAGIC GEPA and MemAlign both also depend on DSPy. The [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/)
-# MAGIC specify `pip install mlflow dspy jinja2 tqdm` as the prerequisites. The dspy install
-# MAGIC above covers all three optimizers; jinja2 and tqdm are pre-installed on Databricks runtimes.
+# MAGIC All three `judge.align` optimizers (SIMBA, GEPA, MemAlign) depend on DSPy. The
+# MAGIC [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/)
+# MAGIC list `pip install mlflow dspy jinja2 tqdm` as the prerequisites; jinja2 and tqdm are
+# MAGIC pre-installed on Databricks runtimes, so we add only `dspy` here. Other lessons don't
+# MAGIC need it.
 
 # COMMAND ----------
 
@@ -241,27 +239,37 @@ if len(paired) >= 10:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Step 4 - Run alignment
+# MAGIC ## Step 4 - Run alignment with MemAlign
 # MAGIC
-# MAGIC `judge.align(traces)` returns a new judge with rewritten instructions. The no-argument
-# MAGIC form uses MLflow's documented default optimizer, **SIMBA** (Simplified Multi-Bootstrap
-# MAGIC Aggregation, DSPy-based). See the [SIMBA docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/simba/).
-# MAGIC For stronger but slower alignment when SME rationales are rich, swap in
-# MAGIC `optimizer=GEPAAlignmentOptimizer(...)` from `mlflow.genai.judges.optimizers`. **MemAlign**
-# MAGIC (`MemAlignOptimizer(reflection_lm=...)`) is also available but is currently experimental
-# MAGIC per the [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/).
-# MAGIC The MLflow team indicated on 2026-05-13 that it's a likely future default. The no-arg
-# MAGIC `align()` call still routes to SIMBA today.
+# MAGIC `judge.align(traces)` returns a new judge with rewritten instructions. MLflow ships three
+# MAGIC optimizers in `mlflow.genai.judges.optimizers`:
+# MAGIC
+# MAGIC - **SIMBA** (Simplified Multi-Bootstrap Aggregation, DSPy-based) - the no-arg default
+# MAGIC   per the [SIMBA docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/simba/).
+# MAGIC - **GEPA** (LLM-driven reflection, DSPy-based) - stronger when SMEs leave rich textual
+# MAGIC   rationales. See the [GEPA docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/gepa/).
+# MAGIC - **MemAlign** (memory-augmented, currently experimental) - the MLflow team indicated on
+# MAGIC   2026-05-13 it's a likely future default. See the [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/).
+# MAGIC
+# MAGIC We explicitly pass `MemAlignOptimizer(reflection_lm=...)` below. This is the same call
+# MAGIC shape the MemAlign docs use, and it demonstrates the parameter pattern. Swap to SIMBA by
+# MAGIC removing the `optimizer=` kwarg or pass `GEPAAlignmentOptimizer(...)` if you want LLM
+# MAGIC reflection over rich SME rationales.
 
 # COMMAND ----------
+
+from mlflow.genai.judges.optimizers import MemAlignOptimizer
 
 assert len(paired) >= 10, (
     "Need at least 10 paired traces. Run lesson 2 to generate more traces, "
     "then re-run this notebook."
 )
 
-aligned_judge = relevance_judge.align(paired)
-print(f"Alignment complete. New judge name: {aligned_judge.name}")
+memalign_optimizer = MemAlignOptimizer(
+    reflection_lm=f"databricks:/{FM_ENDPOINT}",
+)
+aligned_judge = relevance_judge.align(paired, optimizer=memalign_optimizer)
+print(f"Alignment complete with MemAlign. New judge name: {aligned_judge.name}")
 print("\nUnaligned instructions:")
 print(relevance_judge.instructions[:300] + "...")
 print("\nAligned instructions:")
