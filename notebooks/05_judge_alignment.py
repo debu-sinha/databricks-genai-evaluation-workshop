@@ -54,9 +54,11 @@
 # MAGIC ### Why `dspy` is in the install line above
 # MAGIC
 # MAGIC The no-arg `judge.align()` call below routes to the SIMBA optimizer, which is implemented
-# MAGIC on top of DSPy. Other lessons don't need DSPy. If you want a no-extra-deps alternative,
-# MAGIC pass `optimizer=MemAlignOptimizer(reflection_lm=...)` (experimental but DSPy-free) or
-# MAGIC `optimizer=GEPAAlignmentOptimizer(...)` (also DSPy-based, but documented separately).
+# MAGIC on top of DSPy. Other lessons don't need DSPy, so we add it only here.
+# MAGIC
+# MAGIC GEPA and MemAlign both also depend on DSPy. The [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/)
+# MAGIC specify `pip install mlflow dspy jinja2 tqdm` as the prerequisites. The dspy install
+# MAGIC above covers all three optimizers; jinja2 and tqdm are pre-installed on Databricks runtimes.
 
 # COMMAND ----------
 
@@ -246,7 +248,8 @@ if len(paired) >= 10:
 # MAGIC Aggregation, DSPy-based). See the [SIMBA docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/simba/).
 # MAGIC For stronger but slower alignment when SME rationales are rich, swap in
 # MAGIC `optimizer=GEPAAlignmentOptimizer(...)` from `mlflow.genai.judges.optimizers`. **MemAlign**
-# MAGIC (`MemAlignOptimizer(reflection_lm=...)`) is also available but is currently experimental.
+# MAGIC (`MemAlignOptimizer(reflection_lm=...)`) is also available but is currently experimental
+# MAGIC per the [MemAlign docs](https://mlflow.org/docs/latest/genai/eval-monitor/scorers/llm-judge/memalign/).
 # MAGIC The MLflow team indicated on 2026-05-13 that it's a likely future default. The no-arg
 # MAGIC `align()` call still routes to SIMBA today.
 
