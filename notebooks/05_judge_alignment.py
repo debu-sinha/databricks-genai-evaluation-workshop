@@ -327,22 +327,23 @@ display(aligned_df[["trace_id", "human", "judge", "aligned_judge"]])
 
 experiment_id = mlflow.get_experiment_by_name(EXPERIMENT_PATH).experiment_id
 
-# Re-run safety: if a scorer named "relevance" is already registered against this
+# Re-run safety: if a scorer named "relevance" is already registered on this
 # experiment (e.g. from a previous alignment pass), register() raises ValueError.
-# Detect that case and call update() to replace the prior version with this run's
-# aligned version. Match lesson 6's _register_or_skip pattern.
+# The current MLflow scorer API does not expose a "replace the registered body"
+# operation - .update() only changes sampling config, and there is no delete
+# verb. So on re-runs we keep the previously-registered version and continue;
+# the in-memory `aligned_judge` from THIS run is still available for the rest
+# of this notebook (Step 5 below uses it directly).
 try:
     aligned_judge.register(experiment_id=experiment_id)
     print(f"Registered aligned 'relevance' judge against experiment {experiment_id}.")
 except ValueError as e:
     if "already been registered" in str(e):
-        from mlflow.genai.scorers import get_scorer
-
-        existing = get_scorer(name="relevance")
-        existing.update(scorer=aligned_judge)
         print(
-            f"Updated existing 'relevance' scorer on experiment {experiment_id} "
-            "with this run's aligned version."
+            f"'relevance' scorer already registered on experiment {experiment_id}. "
+            "Skipping re-register - the previously aligned version stays as the "
+            "scheduled scorer that lesson 6 picks up. This run's aligned_judge "
+            "remains available in memory for Step 5 below."
         )
     else:
         raise
