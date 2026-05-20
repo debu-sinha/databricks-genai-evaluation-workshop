@@ -265,8 +265,14 @@ assert len(paired) >= 10, (
     "then re-run this notebook."
 )
 
+# MemAlign needs both a reflection_lm (for distilling guidelines from feedback)
+# and an embedding_model (for retrieving relevant feedback examples). The
+# embedding_model defaults to `openai:/text-embedding-3-small` which has no
+# credentials in serverless Databricks - we point both at Databricks-hosted
+# Foundation Model endpoints to avoid the missing-OPENAI_API_KEY failure mode.
 memalign_optimizer = MemAlignOptimizer(
     reflection_lm=f"databricks:/{FM_ENDPOINT}",
+    embedding_model="databricks:/databricks-gte-large-en",
 )
 aligned_judge = relevance_judge.align(paired, optimizer=memalign_optimizer)
 print(f"Alignment complete with MemAlign. New judge name: {aligned_judge.name}")
