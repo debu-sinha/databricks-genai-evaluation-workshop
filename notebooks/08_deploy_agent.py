@@ -5,7 +5,7 @@
 # MAGIC Wraps the `answer_question` chain from lesson 2 as an MLflow `ChatModel`, registers it in
 # MAGIC Unity Catalog, and creates a Mosaic AI Model Serving endpoint. Once the endpoint is `READY`
 # MAGIC the agent is callable from AI Playground, from `curl`, or from any downstream service. Every
-# MAGIC such call writes a trace into the same MLflow experiment lessons 2 to 6 read from, so the
+# MAGIC such call writes a trace into the same MLflow experiment lessons 2 to 7 read from, so the
 # MAGIC loop closes: production traffic feeds the same eval and monitoring surface as your offline
 # MAGIC traces.
 

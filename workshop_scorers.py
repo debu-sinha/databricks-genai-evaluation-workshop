@@ -38,7 +38,11 @@ def make_relevance_judge():
             "You are evaluating whether an answer is relevant to a user's question.\n\n"
             "Question: {{ inputs }}\n"
             "Answer: {{ outputs }}\n\n"
-            "Reply with exactly one word from this set: yes, partial, no."
+            "Reply with exactly one word from this set: yes, partial, no.\n"
+            "- yes: the answer directly addresses the question.\n"
+            "- partial: the answer addresses some aspect but misses key parts.\n"
+            "- no: the answer does not address the question or hallucinates.\n"
+            "Reply with only the single word, no punctuation, no explanation."
         ),
         model="databricks:/databricks-claude-sonnet-4-6",
     )

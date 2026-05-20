@@ -66,9 +66,9 @@ resources:
             - task_key: production_monitoring
           notebook_task:
             notebook_path: ../notebooks/07_otel_uc_integration.py
-            base_parameters:
-              trace_catalog: ${var.trace_catalog}
-              trace_schema: ${var.trace_schema}
+          # trace_catalog / trace_schema bundle variables are declared in databricks.yml
+          # for documentation only - the lesson 7 SQL example uses <catalog>.<schema>
+          # placeholders and does not consume them via dbutils.widgets.
 
         - task_key: deploy_agent
           environment_key: serverless

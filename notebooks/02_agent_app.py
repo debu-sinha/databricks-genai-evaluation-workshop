@@ -16,7 +16,8 @@
 # MAGIC MLflow UI uses to drive its filter chips.
 # MAGIC
 # MAGIC We then call the agent on a query bank to populate the experiment with ~23 traces under three
-# MAGIC simulated users. Lessons 3-6 read from this trace surface.
+# MAGIC simulated users. Lessons 3 to 7 read from this trace surface, and lesson 8 deploys an
+# MAGIC endpoint that writes more traces back into it.
 # MAGIC
 # MAGIC Reference: [MLflow tracing](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/) and
 # MAGIC [user/session metadata](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/track-users-sessions).

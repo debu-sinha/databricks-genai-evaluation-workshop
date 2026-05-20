@@ -133,7 +133,7 @@ dual-export pattern for keeping an existing observability tool (e.g. Datadog) in
 
 Wraps the agent as an `mlflow.pyfunc.ChatModel`, registers it in Unity Catalog, and creates a Mosaic
 AI Model Serving endpoint. Every AI Playground or curl call to the endpoint writes a trace into the
-same MLflow experiment lessons 2 to 6 read from, which closes the loop: production traffic feeds the
+same MLflow experiment lessons 2 to 7 read from, which closes the loop: production traffic feeds the
 same eval and monitoring surface as your offline traces.
 
 The non-obvious part is the **three-env-var pattern** on the served entity:

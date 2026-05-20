@@ -102,9 +102,8 @@ if experiment:
 # MAGIC
 # MAGIC The supported pattern for keeping a separate observability stack (Datadog, Honeycomb, Grafana
 # MAGIC Cloud) in the loop is **dual-export from your application**. Configure your app's OpenTelemetry
-# MAGIC SDK with two exporters - one pointing at Databricks, one at your existing pipeline.
-# MAGIC
-# MAGIC ![Dual-export architecture](./images/architecture.svg)
+# MAGIC SDK with two exporters - one pointing at Databricks, one at your existing pipeline. Both
+# MAGIC receive the same span stream; neither blocks the other.
 # MAGIC
 # MAGIC Routing through Datadog (or any other APM) as a forwarder into Databricks is **not** a
 # MAGIC documented integration today. The third-party tracing integrations index lists OpenTelemetry,
