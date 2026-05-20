@@ -326,8 +326,26 @@ display(aligned_df[["trace_id", "human", "judge", "aligned_judge"]])
 # COMMAND ----------
 
 experiment_id = mlflow.get_experiment_by_name(EXPERIMENT_PATH).experiment_id
-aligned_judge.register(experiment_id=experiment_id)
-print(f"Registered aligned 'relevance' judge against experiment {experiment_id}.")
+
+# Re-run safety: if a scorer named "relevance" is already registered against this
+# experiment (e.g. from a previous alignment pass), register() raises ValueError.
+# Detect that case and call update() to replace the prior version with this run's
+# aligned version. Match lesson 6's _register_or_skip pattern.
+try:
+    aligned_judge.register(experiment_id=experiment_id)
+    print(f"Registered aligned 'relevance' judge against experiment {experiment_id}.")
+except ValueError as e:
+    if "already been registered" in str(e):
+        from mlflow.genai.scorers import get_scorer
+
+        existing = get_scorer(name="relevance")
+        existing.update(scorer=aligned_judge)
+        print(
+            f"Updated existing 'relevance' scorer on experiment {experiment_id} "
+            "with this run's aligned version."
+        )
+    else:
+        raise
 
 # COMMAND ----------
 
