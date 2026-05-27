@@ -5,6 +5,29 @@
 # MAGIC This workshop walks through the full MLflow GenAI evaluation surface on Databricks: tracing,
 # MAGIC custom scorers, LLM-as-a-judge, human review labeling, scheduled production monitoring, and
 # MAGIC OpenTelemetry traces in Unity Catalog.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## What this workshop addresses
+# MAGIC
+# MAGIC Most teams already have an ad hoc eval setup. It works at a few hundred traces and starts breaking somewhere on the way to production scale.
+# MAGIC
+# MAGIC ![The problem](./images/hd_problem.png)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## The three pillars
+# MAGIC
+# MAGIC Three principles tie every lesson together. Each capability you build in the workshop maps back to one of them.
+# MAGIC
+# MAGIC ![Three pillars](./images/hd_three_pillars.png)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## What you will build
 # MAGIC
 # MAGIC By the end you will have:
 # MAGIC
@@ -17,22 +40,6 @@
 # MAGIC
 # MAGIC Plan on about 90 minutes if you run all eight lessons in order. Lesson 8 adds endpoint
 # MAGIC provisioning wait time on top of the others.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## What this workshop addresses
-# MAGIC
-# MAGIC ![The problem](./images/hd_problem.png)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## The three pillars
-# MAGIC
-# MAGIC Three principles tie every lesson together. Each capability you build in the workshop maps back to one of them.
-# MAGIC
-# MAGIC ![Three pillars](./images/hd_three_pillars.png)
 
 # COMMAND ----------
 
