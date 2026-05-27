@@ -222,5 +222,139 @@ if not _recent.empty:
 # MAGIC    appear (judge metrics may be a value distribution rather than a mean depending on output type)
 # MAGIC 3. Click into individual traces. The `relevance` value should be `yes`, `partial`, or `no` -
 # MAGIC    not `None`. If you see `None`, the judge prompt isn't constraining output enough.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Extending the pattern: evaluating an AI Functions batch pipeline
+# MAGIC
+# MAGIC The same eval surface works for batch pipelines that use Databricks AI Functions
+# MAGIC (`ai_classify`, `ai_extract`, `ai_query`, `ai_summarize`, etc.). An AI Function call returns
+# MAGIC a DataFrame you can use directly, or persist to a Unity Catalog Delta table via
+# MAGIC `CREATE TABLE AS SELECT` or `.write.saveAsTable(...)`. Either way, the result is the eval
+# MAGIC dataset: pass it to `mlflow.genai.evaluate(data=df, scorers=[...])` and judges plus code
+# MAGIC scorers run against it the same way they ran against `eval_dataset` above.
+# MAGIC
+# MAGIC No agent code in this section. The pipeline is pure SQL plus the same scorer pattern.
+# MAGIC
+# MAGIC References:
+# MAGIC [ai_classify](https://docs.databricks.com/aws/en/sql/language-manual/functions/ai_classify),
+# MAGIC [AI Functions overview](https://docs.databricks.com/aws/en/large-language-models/ai-functions).
+
+# COMMAND ----------
+
+# Build a small input DataFrame to classify. In a real batch pipeline this is an existing UC table.
+import pandas as pd
+
+classify_inputs = pd.DataFrame(
+    [
+        {"id": "t1", "text": "Customer cannot complete checkout due to payment error."},
+        {"id": "t2", "text": "The mobile app crashes when I open the settings screen."},
+        {"id": "t3", "text": "I never received the package I ordered last week."},
+        {"id": "t4", "text": "How do I reset my password?"},
+    ]
+)
+spark.createDataFrame(classify_inputs).createOrReplaceTempView("classify_inputs")
+
+# Run ai_classify via SQL. v2 takes a JSON string of label name -> description and returns
+# VARIANT with `response` (array of labels) and `error_message`. The function is callable
+# from any SQL surface on Databricks (notebook %sql, SQL warehouses, Workflows, Lakeflow).
+classified = spark.sql(
+    """
+    SELECT
+      id,
+      text,
+      ai_classify(
+        text,
+        '{"billing_error":"Payment or checkout failures","app_bug":"Software defects in the app","logistics":"Shipping or delivery issues","account_help":"Account, login, or password support"}'
+      ) AS prediction
+    FROM classify_inputs
+    """
+)
+display(classified)
+
+# COMMAND ----------
+
+# Reshape the AI Functions output into the format mlflow.genai.evaluate expects:
+#  - `inputs`  dict, what went into the classifier
+#  - `outputs` dict, what the classifier produced
+#  - `expectations` dict, optional ground truth for scoring
+#
+# In a real workflow the ground-truth labels come from a labeled UC table. Here they're inline.
+
+import json
+
+GROUND_TRUTH = {
+    "t1": "billing_error",
+    "t2": "app_bug",
+    "t3": "logistics",
+    "t4": "account_help",
+}
+
+
+def _extract_label(prediction):
+    """v2 ai_classify returns {"response": ["billing_error"], "error_message": null}."""
+    if prediction is None:
+        return None
+    if isinstance(prediction, str):
+        prediction = json.loads(prediction)
+    resp = prediction.get("response") if isinstance(prediction, dict) else None
+    if isinstance(resp, list) and resp:
+        return resp[0]
+    return None
+
+
+ai_eval_dataset = pd.DataFrame(
+    [
+        {
+            "inputs": {"text": row["text"]},
+            "outputs": {"label": _extract_label(row["prediction"])},
+            "expectations": {"expected_label": GROUND_TRUTH[row["id"]]},
+        }
+        for _, row in classified.toPandas().iterrows()
+    ]
+)
+
+# COMMAND ----------
+
+# A simple code-based scorer for label correctness. Same @scorer decorator pattern as the
+# `answer_contains_expected_keyword` scorer earlier in this notebook.
+from mlflow.genai.scorers import scorer as ai_scorer
+
+
+@ai_scorer
+def label_exact_match(outputs: dict, expectations: dict) -> float:
+    predicted = (outputs.get("label") or "").strip()
+    expected = (expectations.get("expected_label") or "").strip()
+    return 1.0 if predicted == expected else 0.0
+
+
+# Run the evaluation against the pre-computed AI Functions output. No predict_fn here -
+# the outputs are already populated from the ai_classify call. mlflow.genai.evaluate
+# accepts pre-computed inputs+outputs DataFrames and runs scorers against them.
+ai_results = mlflow.genai.evaluate(
+    data=ai_eval_dataset,
+    scorers=[label_exact_match],
+)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### What just happened
+# MAGIC
+# MAGIC The eval surface did not care that the outputs came from `ai_classify` instead of from a
+# MAGIC traced RAG agent. Same `mlflow.genai.evaluate` call, same Evaluation UI, same scorer pattern.
+# MAGIC A prompt-based `make_judge` scorer would slot into the `scorers=[...]` list alongside
+# MAGIC `label_exact_match` the same way it slotted in earlier in this notebook.
+# MAGIC
+# MAGIC Production shape:
+# MAGIC
+# MAGIC 1. Schedule the `ai_classify` SQL as a Lakeflow Spark Declarative Pipeline or Workflows job
+# MAGIC    that writes to a Delta table.
+# MAGIC 2. Schedule a follow-up notebook that reads the table and runs `mlflow.genai.evaluate(...)`.
+# MAGIC 3. The eval surface ends up in the same Evaluation UI as the rest of the workshop's evals.
+# MAGIC
+# MAGIC The same pattern applies to `ai_extract` (returns structured fields), `ai_query` (any LLM
+# MAGIC call), `ai_summarize`, `ai_translate`, etc. The output table is the eval dataset.
 # MAGIC
 # MAGIC Continue to [`05_judge_alignment`]($./05_judge_alignment) to calibrate this judge against the SME labels from lesson 3.
