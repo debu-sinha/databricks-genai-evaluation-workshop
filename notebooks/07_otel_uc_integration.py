@@ -27,6 +27,8 @@
 # MAGIC
 # MAGIC References: [Traces in Unity Catalog](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/trace-unity-catalog),
 # MAGIC [OTel span attributes](https://docs.databricks.com/aws/en/mlflow3/genai/tracing/third-party/otel-span-attributes).
+# MAGIC
+# MAGIC ![OpenTelemetry + Unity Catalog](../images/hd_otel_uc_integration_concept.png)
 
 # COMMAND ----------
 

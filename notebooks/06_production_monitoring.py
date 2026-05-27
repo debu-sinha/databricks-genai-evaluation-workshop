@@ -31,6 +31,8 @@
 # MAGIC sampling: 1.0 for cheap safety scorers, 0.05-0.20 for expensive LLM judges.
 # MAGIC
 # MAGIC References: [run scorers in production](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/run-scorer-in-prod).
+# MAGIC
+# MAGIC ![Production monitoring: scheduled scorers](../images/hd_production_monitoring_concept.png)
 
 # COMMAND ----------
 

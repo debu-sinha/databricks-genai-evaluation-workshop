@@ -41,6 +41,8 @@
 # MAGIC same name. In a real workflow the human side comes from SMEs filling out the labeling session
 # MAGIC in the Review App. For workshop reproducibility this notebook will fall back to logging
 # MAGIC synthetic HUMAN labels if no real ones exist yet, with the rule clearly stated below.
+# MAGIC
+# MAGIC ![Closed loop: SME labels improve the judge](../images/hd_loop_diagram.png)
 
 # COMMAND ----------
 

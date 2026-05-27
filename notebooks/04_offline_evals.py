@@ -23,6 +23,8 @@
 # MAGIC
 # MAGIC Both kinds of scorer are first-class on the same eval run. You can mix as many as you want.
 # MAGIC
+# MAGIC ![Offline evaluation concept](../images/hd_offline_evals_concept.png)
+# MAGIC
 # MAGIC ## Choosing a scorer
 # MAGIC
 # MAGIC | Approach | When to use | Cost | Output |
