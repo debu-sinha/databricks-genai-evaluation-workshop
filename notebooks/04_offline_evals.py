@@ -36,6 +36,8 @@
 # MAGIC
 # MAGIC References: [custom scorers](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/custom-scorers),
 # MAGIC [make_judge](https://docs.databricks.com/aws/en/mlflow3/genai/eval-monitor/custom-judge/create-custom-judge).
+# MAGIC
+# MAGIC ![Two scorer shapes](../images/hd_scorer_pattern.png)
 
 # COMMAND ----------
 

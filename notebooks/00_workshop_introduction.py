@@ -21,6 +21,22 @@
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ## What this workshop addresses
+# MAGIC
+# MAGIC ![The problem](./images/hd_problem.png)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## The three pillars
+# MAGIC
+# MAGIC Three principles tie every lesson together. Each capability you build in the workshop maps back to one of them.
+# MAGIC
+# MAGIC ![Three pillars](./images/hd_three_pillars.png)
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## Prerequisites
 # MAGIC
 # MAGIC - A Databricks workspace with **managed MLflow 3** (default on current runtimes)
